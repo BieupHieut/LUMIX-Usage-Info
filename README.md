@@ -1,105 +1,62 @@
-# LUMIX Usage Info
+# LUMIX Usage Info v1.0.0-beta.6
 
-**Current release:** `v1.0.0-beta.3`  
-**Verified hardware:** Panasonic LUMIX **DC-S1RM2**  
-**Verified firmware:** **Ver. 1.5**  
-**Platform:** Windows x64  
-**Validated by:** `@bieup_hieut`
+Unofficial read-only camera usage reader for Panasonic LUMIX cameras.
 
-LUMIX Usage Info is an **unofficial, read-only community tool** that reads selected usage and diagnostic information from supported Panasonic LUMIX cameras over USB in **PC(Tether)** mode.
+## Verified configuration
+- Camera: **DC-S1RM2**
+- Firmware: **1.5**
+- OS target: Windows x64
+- Validated by: **@bieup_hieut**
+- Validation date: **2026-09-16**
 
-> This project is not affiliated with or endorsed by Panasonic. Panasonic and LUMIX are trademarks of their respective owner.
+Counter meanings are fully hardware-verified only on **DC-S1RM2 / FW 1.5**.
 
-## What beta.3 adds
+A community tester has also confirmed that **DC-S5 / FW 2.9** can successfully return the usage data block using **v1.0.0-beta.3**. DC-S5 is therefore marked **READ COMPATIBLE**, but its raw counter meanings are **not yet behavior-verified**. Contributor: **아름프로**.
 
-- Serial Number privacy toggle on the main screen.
-- `Save PNG` export flow with **Public Share** and **Device Verification** presets.
-- Serial Number export choices: **Masked / Last 4 digits / Full Serial**.
-- `Copy Summary` for quick sharing in GitHub Issues, forums, or DMs.
-- Since-last-refresh deltas for verified counters.
-- Improved Error History empty-state and validation labeling.
-- Validation Info page showing verified camera / firmware / tool version / validator.
-- Worker-process camera communication with timeout so a stalled WPD/PTP request does not freeze the UI.
+## What it reads
+- Model / firmware / serial number
+- Shutter Actuations (verified on DC-S1RM2 FW 1.5)
+- Power / Wake Activations (verified on DC-S1RM2 FW 1.5)
+- Panasonic SetupInfo diagnostic block
+- Error History (legacy-code decoding is partial / informational)
+- Raw counters 3–7 (unidentified)
 
-## Verified information on DC-S1RM2 / FW 1.5
+## beta.6 highlights
+- `VALIDATION` renamed to **VALIDATION & INFO**
+- Validation & project pages are available even when no camera is connected
+- **Disconnected / stale-data state**: last successful read remains visible with a clear warning
+- USB device-tree changes trigger a non-blocking background re-check
+- Refresh shows `REFRESHING...`
+- Single-instance protection avoids two copies competing for one camera
+- Save Report masks serial number except for the last 4 digits by default
+- Clipboard copy retries briefly if another app temporarily owns the clipboard
+- State-aware Pomeranian mascots: normal / info-success / PNG-export / error-disconnected
+- Version History corrected (`beta.3` Sharing & Privacy entry)
+- First external community validation: **DC-S5 / FW 2.9 = READ COMPATIBLE** (counter semantics unverified), contributed by **아름프로**, tested with **v1.0.0-beta.3**
+- Existing beta.4 PNG-save stability fix retained
 
-### Shutter Actuations — VERIFIED
-
-Behavior observed on real hardware:
-
-- Mechanical shutter exposure: `+1` per physical actuation.
-- Electronic shutter exposure: `+0`.
-- Power OFF while **[Power-off Shutter] = CLOSE**: can add `+1` because the physical shutter closes.
-- High Resolution test: `+0` in the tested setup (electronic shutter path).
-- Pixel Refresh + required restart: a total increase was observed in testing, but the exact internal breakdown is **not isolated**. Do not assume Pixel Refresh always adds a fixed number.
-
-### Power / Wake Activations — VERIFIED
-
-- Camera OFF → ON: `+1`.
-- Sleep → wake cycle: `+1`.
-- USB disconnect / reconnect only: `+0`.
-
-The exact moment inside the sleep/wake cycle at which the counter increments has not been isolated, so the broad label **Power / Wake Activations** is intentional.
-
-### Counters 3–7 — UNIDENTIFIED
-
-The tool exposes the raw values only in Technical Details. Legacy Panasonic names may be shown only as historical candidates and must not be treated as confirmed DC-S1RM2 meanings.
-
-## PNG export privacy
-
-`Save PNG` opens an export screen:
-
-- **Public Share** — privacy-first preset.
-- **Device Verification** — suitable for ownership or used-camera verification.
-- Serial display can still be selected manually as **Masked / Last 4 digits / Full Serial**.
-
-If Full Serial is selected, do not post the exported image publicly unless you intentionally want to expose the serial number.
-
-## Connection
-
+## Camera connection
 1. Turn on the camera.
-2. Connect it to the PC by USB.
-3. On the camera, set USB Mode to **PC(Tether)**.
+2. Connect it to the PC via USB.
+3. Set camera USB mode to **PC(Tether)**.
 4. Close LUMIX Tether if it is running.
-5. Run `LUMIX_Usage_Info_v1.0.0-beta.3.exe`.
+5. Run `LUMIX_Usage_Info_v1.0.0-beta.6.exe`.
 
-## Read-only safety
+## Safety
+The program intentionally implements only read paths used by this project:
+- `0x1001` — standard PTP GetDeviceInfo
+- `0x9414` + `0x15C00010` — Panasonic SetupInfo read
 
-The public tool intentionally uses only read paths:
+No EEPROM/ROM write, firmware modification, `SetProperty`, or unverified opcode brute-force path is implemented.
 
-- Standard PTP `0x1001` — GetDeviceInfo
-- Panasonic read `0x9414` with `0x15C00010`
+## Privacy
+- Screen serial number is masked by default.
+- PNG export offers Masked / Last 4 / Full Serial choices.
+- TXT report uses **Last 4 digits** by default.
+- Hide full serial numbers before public posting unless intentionally using Device Verification.
 
-Camera-write commands such as `0x9403`, `0x940B`, `0x9704`, EEPROM/ROM writes, and firmware modification are **not implemented**.
+## Feedback
+- GitHub Issues: preferred for reproducible bugs and validation results
+- Instagram DM: **@bieup_hieut**
 
-## Feedback / additional validation
-
-GitHub Issues are preferred because test results remain searchable for other users. Instagram DM is also welcome: **@bieup_hieut**.
-
-When reporting results, include:
-
-- Camera model
-- Firmware version
-- Tool version
-- Windows version
-- What you did before and after Refresh
-- Counter change observed
-
-Please redact the Serial Number from public screenshots unless it is intentionally being used for device verification.
-
-## Build
-
-The program is written in Go and uses Win32/WPD directly.
-
-```bash
-GOOS=windows GOARCH=amd64 CGO_ENABLED=0 \
-  go build -trimpath -ldflags="-H=windowsgui -s -w" \
-  -o LUMIX_Usage_Info_v1.0.0-beta.3.exe main.go
-```
-
-Recommended before release:
-
-```bash
-GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go vet main.go
-```
-
+This is an unofficial community tool and is not affiliated with or endorsed by Panasonic.
