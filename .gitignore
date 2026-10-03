@@ -10,7 +10,6 @@ LUMIX_Usage_Report_*.txt
 LUMIX_Usage_Info_*.png
 
 # Local editor/build artifacts and configuration
-.gocache/
 .codex-remote-attachments/
 .vscode/
 .idea/
@@ -21,3 +20,19 @@ Desktop.ini
 *.prof
 .env
 .env.*
+
+# Keep private development material outside the public source tree.
+/_internal/
+/_archive/
+/HANDOVER*.md
+/FINAL_REVIEW*.md
+/STATIC_QA*.md
+/*CHECKLIST*.md
+/GITHUB_PUBLISHING_GUIDE*.md
+/BRAND_GUIDE*.md
+/branding/
+/validation_evidence/
+/docs/development_archive/
+/docs/archive_beta*/
+/docs/comic/
+/docs/L10_*
