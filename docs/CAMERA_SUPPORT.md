@@ -1,6 +1,6 @@
-# 기종 지원과 검증 / Camera support
+# Camera support / 기종 지원과 검증
 
-## 검증된 조합 / Verified pairs
+## Verified pairs / 검증된 조합
 
 | 모델 / Model | 펌웨어 / Firmware | 셔터 / Shutter | 전원·깨우기 / Power-wake | 확인 / Confirmed by |
 |---|---|---|---|---|
@@ -17,7 +17,7 @@ Counter 3/4는 추정, 5–7은 의미 미확인입니다.
 Counters 1/2 are confirmed as power/wake and shutter actuations for these community-verified pairs.
 **Other firmware on the same model is not automatically verified.** Counters 3/4 remain estimated and 5–7 unidentified.
 
-## 지원 추정 목록 / Estimated support
+## Estimated support / 지원 추정 목록
 
 PC(테더) 연결을 바탕으로 한 지원 추정 목록입니다. 모든 기종의 조회 성공이나 카운터 의미를 보증하지 않습니다.
 아래 모델에서 확인된 결과가 있으면 [기종 확인 제보](https://github.com/BieupHieut/LUMIX-Usage-Info/issues/new/choose)를 부탁드립니다.
@@ -30,12 +30,12 @@ Please submit results through [Issues](https://github.com/BieupHieut/LUMIX-Usage
 | S | DC-BS1H · DC-S1 · DC-S1R · DC-S1M2ES · DC-S1H · DC-S5M2X · DC-S9 |
 | G / GH / BGH | DC-BGH1 · DC-GH5 · DC-GH5S · DC-GH5M2 · DC-G9 · DC-G9M2 · DC-GH6 · DC-GH7 |
 
-## 연결 모드 / USB mode
+## USB mode / 연결 모드
 
 - 일반 지원 기종 / Standard supported cameras: **PC(테더) / PC(Tether)**
 - **DC-L10: LUMIX Lab**
 
-## 작동 관찰 / Observed behavior
+## Observed behavior / 작동 관찰
 
 다음 관찰은 **DC-S1RM2 / 펌웨어 1.5**에서 확인됐으며 Panasonic의 공식 카운터 정의가 아닙니다.
 다른 모델에 그대로 적용하지 않습니다.

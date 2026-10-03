@@ -42,6 +42,10 @@ Shutter actuations may differ from the number of photographs and do not indicate
 - [Changelog](CHANGELOG.md) · [Creator and contributors](CREDITS.md)
 - [Bug reports and camera verification](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) · [Build from source](docs/BUILD.md)
 
+### Contact
+
+If you encounter a problem, contact us through [GitHub Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) or [Instagram DM @bieup_hieut](https://www.instagram.com/bieup_hieut/).
+
 **v1.0.0 · Released 2026-10-03**
 
 This is an unofficial community project and is not affiliated with Panasonic.
@@ -85,6 +89,10 @@ This is an unofficial community project and is not affiliated with Panasonic.
 - [기종 검증 데이터 업데이트](docs/CAMERA_DATA.md)
 - [버전 기록](CHANGELOG.md) · [제작자와 도움을 주신 분들](CREDITS.md)
 - [문제 신고·기종 확인](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) · [소스 빌드](docs/BUILD.md)
+
+### 문의
+
+문제가 발생하면 [GitHub Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) 또는 [Instagram DM @bieup_hieut](https://www.instagram.com/bieup_hieut/)으로 연락해 주세요.
 
 **v1.0.0 · 릴리즈 2026-10-03**
 

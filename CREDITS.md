@@ -20,4 +20,8 @@
 
 카메라 확인과 피드백에 감사드립니다. / Thank you for camera tests and feedback.
 
-[문제 신고·기종 확인 / Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues)
+## Contact / 문의
+
+For problems, contact [GitHub Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) or [Instagram DM @bieup_hieut](https://www.instagram.com/bieup_hieut/).
+
+문제가 발생하면 [GitHub Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) 또는 [Instagram DM @bieup_hieut](https://www.instagram.com/bieup_hieut/)으로 연락해 주세요.

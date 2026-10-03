@@ -1,38 +1,39 @@
-# 검증 데이터 업데이트 / Camera data updates
+# Camera data updates / 검증 데이터 업데이트
 
-EXE에는 현재 검증 목록이 포함돼 있어 **JSON 없이도 실행할 수 있습니다**.
-새 검증 목록을 따로 적용할 때만 `camera_profiles.json`을 사용합니다.
+## English
 
-The EXE includes its verification list and **runs without a JSON file**.
-The optional `camera_profiles.json` applies newer verification data separately.
+Current verification data is embedded in the EXE. **The reader runs without a JSON file.**
+Use the optional `camera_profiles.json` only to apply newer verification data separately.
 
-## 적용 / Apply
+### Apply an update
 
-1. 이 저장소의 최신 `camera_profiles.json`을 내려받습니다.
+1. Download [camera_profiles.json](../camera_profiles.json) from this repository.
+2. Place it in the same folder as the EXE.
+3. Close and restart the reader.
+
+If the file is missing or invalid, the reader uses its embedded list. If an external-data warning appears, replace the file with the version from this repository or remove it and restart.
+Updates are not downloaded automatically. The file updates the verification list, not the numbers read from the camera.
+
+### Versions
+
+Software changes use application versions; camera verification additions use data revision dates.
+Current data revision: **2026-10-02**. A data publication date is not necessarily the camera test date.
+
+## 한국어
+
+현재 검증 데이터는 EXE 안에 포함돼 있습니다. **JSON 없이도 실행할 수 있습니다.**
+새 검증 데이터만 따로 적용할 때 선택 파일인 `camera_profiles.json`을 사용합니다.
+
+### 업데이트 적용
+
+1. 이 저장소의 [camera_profiles.json](../camera_profiles.json)을 내려받습니다.
 2. EXE와 같은 폴더에 놓습니다.
 3. 프로그램을 종료하고 다시 실행합니다.
 
-Download the updated JSON from this repository, place it beside the EXE, and restart.
-Missing or invalid data falls back to the embedded list. The reader has no automatic online update.
+파일이 없거나 형식이 잘못되면 내장 목록을 사용합니다. 외부 데이터 경고가 뜨면 이 저장소의 파일로 교체하거나 파일을 제거한 뒤 다시 실행하세요.
+업데이트를 자동으로 내려받지는 않습니다. 이 파일은 검증 목록을 갱신하며 카메라에서 읽은 숫자는 변경하지 않습니다.
 
-파일이 없거나 형식이 잘못되면 내장 목록을 사용합니다. 자동 인터넷 업데이트는 없습니다.
-이 파일은 검증 표시만 갱신하며 카메라 명령이나 카운터 해석 방식을 변경하지 않습니다.
+### 버전
 
-## 버전 / Versioning
-
-프로그램 기능·버그 수정은 앱 버전으로, 기종 검증 추가는 데이터 날짜로 관리합니다.
-현재 데이터 갱신일은 **2026-10-02**입니다. 실제 기종 검증 날짜와 데이터 발행 날짜는 다를 수 있습니다.
-
-Software changes use application versions; verified-pair updates use data revision dates.
-Current revision: **2026-10-02**. A data publication date is not necessarily the test date.
-
-새 기종 결과는 [Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues/new/choose)로 보내 주세요.
-프로젝트에서 확인한 정확한 모델·펌웨어 조합을 목록에 반영합니다.
-
-## 소스 관리자 참고 / Maintainer note
-
-검증 데이터를 변경할 때 루트와 `source/camera_profiles.json`을 함께 갱신합니다.
-스키마 1에서 셔터·전원 카운터가 모두 확인된 조합을 등록합니다. 실제 검증 날짜를 모르면 `validation_date`를 생략합니다.
-
-Update both JSON copies for source builds. Schema 1 holds pairs with both shutter and power/wake meanings confirmed.
-Omit `validation_date` when the actual test date is unknown.
+프로그램 변경은 앱 버전으로, 기종 검증 추가는 데이터 날짜로 관리합니다.
+현재 데이터 갱신일은 **2026-10-02**입니다. 데이터 발행 날짜와 실제 카메라 검증 날짜는 다를 수 있습니다.
