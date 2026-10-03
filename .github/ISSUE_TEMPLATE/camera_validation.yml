@@ -1,0 +1,15 @@
+name: Camera validation result
+description: Submit read-only results from another camera / firmware
+body:
+  - type: input
+    attributes: {label: Camera model}
+  - type: input
+    attributes: {label: Firmware}
+  - type: input
+    attributes: {label: Tool version, value: v1.0.0}
+  - type: textarea
+    attributes: {label: Read result / observed behavior}
+  - type: textarea
+    attributes: {label: Controlled action performed}
+  - type: markdown
+    attributes: {value: "Do not perform risky service-mode writes or destructive tests. Read-only validation only."}

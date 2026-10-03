@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "revision": "2026-10-02",
+  "profiles": [
+    {"model":"DC-S1RM2", "firmware":"1.5", "validated_by":"@bieup_hieut", "validation_date":"2026-09-16"},
+    {"model":"DC-S5M2", "firmware":"3.7", "validated_by":"엘가, 제비동선"},
+    {"model":"DC-S5", "firmware":"2.9", "validated_by":"아름프로"},
+    {"model":"DC-L10", "firmware":"1.2", "validated_by":"잠이든"},
+    {"model":"DC-S1M2", "firmware":"1.4", "validated_by":"잠이든"}
+  ]
+}

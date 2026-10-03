@@ -1,0 +1,23 @@
+# Publish these as release assets, not source history.
+*.exe
+*.zip
+SHA256SUMS.txt
+.gocache/
+# Local diagnostics / reports may contain private camera data.
+L10_USB_Test_*.json
+L10_USB_Test_*.txt
+LUMIX_Usage_Report_*.txt
+LUMIX_Usage_Info_*.png
+
+# Local editor/build artifacts and configuration
+.gocache/
+.codex-remote-attachments/
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.test
+*.prof
+.env
+.env.*

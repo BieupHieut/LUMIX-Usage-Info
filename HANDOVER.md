@@ -1,25 +1,25 @@
-# Version History
+# LUMIX Usage Info v1.0.0 — 2026-10-03
 
-## 1.0.0 — 2026-10-03
+## 정식 릴리스 / Stable release
 
-Initial stable feature release: read-only camera usage, raw fields/error history, PNG/TXT/clipboard exports, bilingual UI, Lumerian design, resize/DPI/keyboard support. Final layout/save/response-frame corrections. Subsequent software changes use semantic versions.
+- 프로그램 버전 1.0.0; 기종 검증 데이터 발행일 2026-10-02를 별도로 표시·관리합니다. 외부 JSON + 내장 기본 데이터, 정확한 모델/펌웨어 매칭과 향후 목록 페이지 이동을 지원합니다.
+- 한/영 화면의 문구·수직 정렬·카운터 기준 버튼 위치를 점검했습니다. 어두운 배경과 빨강/파랑 역할, 루메리안 상태별 이미지를 유지합니다.
+- 미검증 모델/펌웨어도 셔터/전원 명칭을 쓰되 ‘추정됨’을 홈·기술 정보·PNG·요약·TXT에 표시합니다. S5M2 3.7은 검증됨을 유지합니다.
+- Counter 3 플래시, Counter 4 절전은 기존 STBCNT / PSVCNT 후보를 기반으로 추정 표시합니다. 5~7은 의미 미확인입니다. 오류 종료 횟수라는 근거 없는 진단은 추가하지 않습니다.
+- 기본 저장 위치를 문서에서 Local AppData로 변경했습니다. PNG 저장 위치 안내를 실제 대화상자 동작에 맞췄습니다. 저장 실패는 폴더 권한/Windows 보안 확인을 안내합니다.
+- TXT 같은 초 저장 시 덮어쓰기를 막고, PNG는 완성된 임시 파일로 교체해 저장 실패 시 기존 파일을 먼저 잘라내지 않습니다.
+- 일반 서비스 응답의 잘린 TLV/중복 응답을 거부합니다. 기존 필드 오프셋과 USB 읽기 명령은 유지합니다.
+- 기능 버전 기록을 정식 릴리스·기종 데이터·베타 개발 이력으로 정리했습니다. 전체 베타 기록은 docs/development_archive에 보관합니다.
+- PC(테더) 목록을 S/G/GH/BGH 계열과 전체 DC 모델명으로 정돈하고 L10 Lab 연결을 분리 안내합니다.
 
-## Camera data — 2026-10-02
+## Test scope
 
-Initial independent registry for five exact verified pairs. Camera-only additions use data dates; see CAMERA_DATA_GUIDE.md. Data dates do not assert physical test dates.
+Go tests / vet, mocked L10/S1M2 reads, exact firmware validation, invalid camera data, estimated requested-model labels, save collisions/failures, PNG writes, both-language GDI text metrics/screens, 125/150/200% rendering and hidden native Win32 viewport/navigation tests. See STATIC_QA.md for results. Physical camera communication and target-PC security/dialog/mixed-monitor conditions were not reproduced here.
 
-## Beta development archive
 
-| Stage | Work |
-|---|---|
-| Beta.6–7 | Service reader, known model validation, truthful counter semantics |
-| Beta.8–11 | Lumerian branding, dark dashboard, color system, USB guide |
-| Beta.12–14 | Automatic/manual language, typography, layout, fixed header and connection list |
-| Beta.15 | DPI, scrolling, keyboard navigation and saved-file access |
-| Beta.16 | L10 exploratory diagnostic work, retained as historical reference |
-| Beta.17–18 | Regular L10 Lab reads, S1M2 reports, community-confirmed meanings, unified verification, scrollbar fix |
+## Deliverables
 
-[Detailed beta history](docs/development_archive/VERSION_HISTORY.md). Archived claims describe the evidence available at that stage; the current registry is authoritative for this release.
+Standalone `LUMIX_Usage_Info_v1.0.0.exe` + `camera_profiles.json`; Windows x64 ZIP; GitHub Public source ZIP; HANDOVER ZIP; FULL_PACKAGE ZIP; SHA256SUMS. Older beta releases are retained externally. Do not include the older beta executables in the stable release.
 
 
 ## 2026-10-02 배포 전 UI 수정

@@ -20,8 +20,12 @@ These are controlled behavior observations from a real camera, not official Pana
 Unidentified. Legacy candidate names may be shown only as unverified references.
 
 
-# Community Read Compatibility — DC-S5 / Firmware 2.9
+# Community Validation — DC-S5 / Firmware 2.9
 
 Contributor: **아름프로** · Tool: **v1.0.0-beta.3**
 
-The camera successfully returned the usage data block, including Raw Counter 2 and Raw Counter 1. Their meanings have **not** been behavior-verified on DC-S5. Keep raw labels until controlled testing is complete.
+The earlier beta.3 sample established read compatibility. The project owner subsequently confirmed Shutter Actuations and Power / Wake Activations as verified for this exact model/firmware combination on 2026-09-20. Individual controlled delta logs were not supplied, so the detailed DC-S1RM2 behavior above must not be assumed to apply to DC-S5.
+
+# Community Validation — DC-S5M2 / Firmware 3.7
+
+Validators: **엘가, 제비동선**. Both Shutter Actuations and Power / Wake Activations were confirmed as verified by the project owner on 2026-09-20. The provided report contains raw values, not controlled delta logs; model-specific increment rules are therefore not documented.

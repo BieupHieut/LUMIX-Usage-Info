@@ -1,22 +1,18 @@
-# Community Validation Results
+# Community Validation Results — 1.0.0
 
-## DC-S5 / Firmware 2.9
+## Existing confirmations
 
-- **Status:** READ COMPATIBLE
-- **Tool used:** LUMIX Usage Info v1.0.0-beta.3
-- **Contributor:** 아름프로
-- **Result:** Camera information and the two main raw counters were successfully read.
-- **Observed sample:** Raw Counter 2 = 1,074 / Raw Counter 1 = 430
-- **Counter semantics:** NOT behavior-verified on DC-S5.
+- DC-S1RM2 / 1.5 — @bieup_hieut; detailed behavior in KNOWN_COUNTER_BEHAVIOR.md.
+- DC-S5M2 / 3.7 — 엘가, 제비동선; owner-supplied shutter/power classification. Individual logs/test dates not supplied.
+- DC-S5 / 2.9 — 아름프로; owner-supplied shutter/power classification. Individual logs/test dates not supplied.
 
-This result confirms read compatibility only. It does **not** establish that Raw Counter 2 means Shutter Actuations or that Raw Counter 1 means Power / Wake Activations on DC-S5.
+## 2026-10-02 confirmation: 잠이든
 
-### Useful next tests
-If a DC-S5 owner wishes to help, safe controlled tests include:
+- DC-L10 / 1.2 / LUMIX Lab / beta.6 screenshot: Raw Counter 2 = 1,387, Raw Counter 1 = 404; read completed displayed.
+- DC-S1M2 / 1.4: successful read; tool version/USB mode/raw report not supplied.
+- The project owner subsequently confirmed identical shutter/power counter meanings for both. 1.0.0 marks those exact pairs VERIFIED. Counters 3–7, error mappings and mode-dependent increment details are not included in that classification.
+- Actual validation dates and controlled logs were not supplied; 2026-10-02 is the date received. These are community-supplied confirmations, not developer hardware tests on 1.0.0.
 
-1. Record a baseline.
-2. Take exactly one mechanical-shutter photo and read again.
-3. Take exactly one electronic-shutter photo and read again.
-4. Perform one sleep-to-wake cycle and read again.
+## Special Thanks
 
-Do not use service-mode write operations or unknown opcode probing.
+**Panasonic LUMIX Café Forum** / **파나소닉 루믹스 카페 포럼** members: https://cafe.naver.com/panalumix. Membership supplied by project owner.

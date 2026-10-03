@@ -1,19 +1,7 @@
-# Read-only Safety Notes
+# Read-only scope — 1.0.0
 
-LUMIX Usage Info is intentionally a read-only utility.
+정규 조회는 WPD/PTP 표준 기기 정보와 기존 `0x9414 {0x15C00010}` 읽기 요청을 사용합니다. 카메라 쓰기·촬영·모드 변경·드라이버 교체·서비스 메뉴 진입 기능은 없습니다. 기존 자동 조회/재연결 감지와 12초 worker 제한이 유지됩니다.
 
-Allowed camera operations in the public tool:
+DC-L10은 표준 모델 확인 및 응답의 성공 코드/태그/정확한 146바이트 구조를 검사한 뒤 잠정 값을 표시합니다. L10 / 1.2와 S1M2 / 1.4의 셔터·전원 의미는 사용자 확인에 따라 검증됨으로 표시합니다. 카운터 3~7과 오류 해석은 미검증입니다. 과거 수동 L10 진단 코드는 참조/파서 재사용을 위해 남지만 메뉴/worker 진입을 제공하지 않습니다.
 
-- PTP `0x1001` GetDeviceInfo
-- Panasonic read operation `0x9414` with tag `0x15C00010`
-
-Do not add the following to a public build:
-
-- `0x9403` SetProperty
-- `0x940B`
-- `0x9704` SetMntInfo
-- EEPROM / ROM writes
-- Firmware modification
-- Unverified service-mode write actions
-
-Unknown opcodes should not be brute-forced from this application.
+기본 TXT는 시리얼 뒤 4자리만 남깁니다. PNG는 사용자가 선택한 공개 범위를 반영합니다. 오류 이력은 일반 리포트 기능의 일부이며 공유 전 확인하세요. 자동 업로드/카페 접근/메시지 전송은 없습니다.

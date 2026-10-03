@@ -1,25 +1,23 @@
-# Version History
+# 1.0.0 final QA — 2026-10-03
 
-## 1.0.0 — 2026-10-03
+## Passed locally
 
-Initial stable feature release: read-only camera usage, raw fields/error history, PNG/TXT/clipboard exports, bilingual UI, Lumerian design, resize/DPI/keyboard support. Final layout/save/response-frame corrections. Subsequent software changes use semantic versions.
+- Go test suite and go vet (Windows x64, Go 1.27.1); production GUI binary build.
+- Existing exact five pairs, unknown firmware and variant rejection; regular mocked L10/S1M2 reads.
+- Korean/English auto/manual language, remembered settings, serial masking and snapshot identity.
+- Requested S9/S5M2 unknown firmware/G9M2/GH7: estimated 1/2 names; 3/4 estimates; 5–7 unidentified. Report data revision and privacy checks.
+- Camera registry schema/date/size/duplicates/unknown fields/trailing JSON rejection; data-only addition and pagination. Runtime executable metadata smoke checks use isolated synthetic files.
+- Same-second TXT saves retain both files; file-as-directory failure does not claim success. PNG replacement produces valid image and removes temporary files.
+- Truncated headers/payload and duplicate service frames rejected; normal field offsets preserved.
+- GDI rendering/text metrics in Korean/English: welcome, verified L10/S1M2 home, requested unverified homes, technical details, behavior reference, error history, verification, future registry page, credits, history, export controls and PNG card. No unintended single-line clipping found.
+- Real saveExportPNGToPath rendered Korean/English 1000×650 PNGs with estimated labels. Images inspected locally.
+- 125/150/200% welcome/verification/credits rendering; hidden native Win32 tests for fit/small/resize/move/forced-bar cleanup/keyboard navigation/DPI-change handling.
 
-## Camera data — 2026-10-02
+## Boundaries
 
-Initial independent registry for five exact verified pairs. Camera-only additions use data dates; see CAMERA_DATA_GUIDE.md. Data dates do not assert physical test dates.
+No developer camera connected in this session. Community evidence establishes existing meanings; mock protocol tests do not confirm this binary on physical cameras. Native interactive save-dialog behavior, deliberate Defender blocking, organization policy and movement between physical monitors with different DPI were not reproduced. No claim that all firmware variants work or counters 3–7 / modern error codes are fully decoded.
 
-## Beta development archive
-
-| Stage | Work |
-|---|---|
-| Beta.6–7 | Service reader, known model validation, truthful counter semantics |
-| Beta.8–11 | Lumerian branding, dark dashboard, color system, USB guide |
-| Beta.12–14 | Automatic/manual language, typography, layout, fixed header and connection list |
-| Beta.15 | DPI, scrolling, keyboard navigation and saved-file access |
-| Beta.16 | L10 exploratory diagnostic work, retained as historical reference |
-| Beta.17–18 | Regular L10 Lab reads, S1M2 reports, community-confirmed meanings, unified verification, scrollbar fix |
-
-[Detailed beta history](docs/development_archive/VERSION_HISTORY.md). Archived claims describe the evidence available at that stage; the current registry is authoritative for this release.
+Packaging: root/ZIP SHA-256 manifests and installed files must be verified after packaging; see the local verification script/output. No GitHub posting occurred.
 
 
 ## 2026-10-02 배포 전 UI 수정

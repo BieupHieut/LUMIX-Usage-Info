@@ -1,25 +1,31 @@
-# Version History
+# 1.0.0 최종 검토
 
-## 1.0.0 — 2026-10-03
+## 반영한 문제
 
-Initial stable feature release: read-only camera usage, raw fields/error history, PNG/TXT/clipboard exports, bilingual UI, Lumerian design, resize/DPI/keyboard support. Final layout/save/response-frame corrections. Subsequent software changes use semantic versions.
-
-## Camera data — 2026-10-02
-
-Initial independent registry for five exact verified pairs. Camera-only additions use data dates; see CAMERA_DATA_GUIDE.md. Data dates do not assert physical test dates.
-
-## Beta development archive
-
-| Stage | Work |
+| 항목 | 조치 |
 |---|---|
-| Beta.6–7 | Service reader, known model validation, truthful counter semantics |
-| Beta.8–11 | Lumerian branding, dark dashboard, color system, USB guide |
-| Beta.12–14 | Automatic/manual language, typography, layout, fixed header and connection list |
-| Beta.15 | DPI, scrolling, keyboard navigation and saved-file access |
-| Beta.16 | L10 exploratory diagnostic work, retained as historical reference |
-| Beta.17–18 | Regular L10 Lab reads, S1M2 reports, community-confirmed meanings, unified verification, scrollbar fix |
+| 전원 제목 / 횟수 기준 버튼의 인접 배치 | 버튼을 숫자 옆으로 분리, 긴 추정 명칭 영역 확보 |
+| 한/영 정렬과 흐린 보조 문구 | 한 줄 수직 정렬 통일, 일부 낮은 밝기의 문구 대비 개선 |
+| 저장 위치 안내 불일치 / 문서 폴더 차단 | PNG 위치 선택 안내, 기본 경로를 Local AppData로 변경 |
+| 같은 초 TXT 파일 덮어쓰기 | 배타적 새 파일 생성 + 번호 접미사 |
+| PNG 실패 시 기존 파일 손상 가능성 | 같은 폴더의 완성된 임시 파일로 교체 |
+| 잘리거나 중복된 서비스 응답 오독 가능성 | 응답 프레임 전체 검사 후 해석 |
+| 미검증 이름 / 내보내기 표현 불일치 | 추정됨을 홈·기술 정보·PNG·TXT·요약에 일관 적용 |
+| 기능 버전과 검증 기종 업데이트 혼재 | 앱 1.0.0 / 데이터 2026-10-02 분리 |
+| 기종 목록 증가 시 겹칠 위험 | 검증 우선 통합 목록, 7개씩 페이지 표시, 정확한 펌웨어 조합 유지 |
+| 혼동되는 USB 모델 줄임 표기 | 전체 DC 모델명으로 정돈, L10 Lab 경로 별도 안내 |
 
-[Detailed beta history](docs/development_archive/VERSION_HISTORY.md). Archived claims describe the evidence available at that stage; the current registry is authoritative for this release.
+## 출시 범위 판단
+
+현재 목적(읽기 전용 사용 정보 확인·저장·공유)에 필요한 핵심 기능은 갖춰졌습니다. 1.0.0 출시 전에 큰 신규 기능은 권하지 않습니다. 검증 기종 확대는 날짜 기반 데이터 업데이트가 적합합니다.
+
+향후 실제 수요가 생기면 이전 측정값과 비교하는 기록 기능을 검토할 수 있습니다. ‘남은 셔터 수명 자동 예측’은 기종별 기준과 실제 고장 데이터가 부족해 지금 추가하지 않습니다. 셔터 작동 횟수를 사진 총 개수와 동일하게 설명하지 않습니다.
+
+카운터 3은 플래시, 4는 절전의 기존 후보 명칭을 추정 표시합니다. 4를 오류 종료로 단정할 근거는 없고 5~7은 명칭을 만들어 붙이지 않았습니다. [추정 명칭의 근거](COUNTER_MEANINGS.md).
+
+## 확인 결과 / 남은 실환경 확인
+
+로컬 코드·모의 통신·한영 렌더링·저장 파일·숨김 네이티브 창 검사는 통과했습니다. 버그가 없다고 단정할 수는 없습니다. 실제 카메라에서 연결 → 새로고침 → TXT / PNG 저장, 사용자 PC의 폴더 보호와 배율 변경을 한 번 확인하는 것이 마지막 권장 확인입니다. 자세한 범위는 STATIC_QA.md에 있습니다.
 
 
 ## 2026-10-02 배포 전 UI 수정

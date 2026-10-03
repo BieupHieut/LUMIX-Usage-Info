@@ -1,0 +1,19 @@
+name: Bug report
+description: Report a reproducible problem in LUMIX Usage Info
+body:
+  - type: input
+    attributes: {label: Tool version, placeholder: v1.0.0}
+  - type: input
+    attributes: {label: Camera model, placeholder: DC-S1RM2}
+  - type: input
+    attributes: {label: Camera firmware, placeholder: 1.5}
+  - type: input
+    attributes: {label: Windows version}
+  - type: textarea
+    attributes: {label: Steps to reproduce}
+  - type: textarea
+    attributes: {label: What happened}
+  - type: textarea
+    attributes: {label: Expected behavior}
+  - type: markdown
+    attributes: {value: "Please hide the full camera serial number in public screenshots unless it is intentionally required."}
