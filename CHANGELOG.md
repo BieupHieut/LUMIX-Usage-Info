@@ -1,5 +1,25 @@
 # Changelog / 버전 기록
 
+## v1.1.1 — 2026-10-12
+
+### English
+
+- Fixed the Windows single-instance check so repeated launches cannot bypass the running-app guard.
+- Added a stage and error code when Windows cannot create the startup guard or main window.
+- History cleanup now keeps both sides of counter changes and daily endpoints, preserving observed daily/monthly/yearly increases and zero-count days.
+- Opening Save report starts with the serial fully hidden; Camera error history starts on the first page.
+- Existing history format and camera read commands are unchanged. No new model/firmware compatibility is claimed.
+
+### 한국어
+
+- Windows 중복 실행 확인을 수정해 실행 중인 앱을 다시 띄우는 문제가 생기지 않도록 했습니다.
+- Windows가 실행 보호 처리 또는 앱 창을 만들지 못하면 실패 단계와 오류 코드를 안내합니다.
+- 이력 정리에서 카운터 변경 전후와 날짜별 양 끝 기록을 보존해 일별·월별·연별 관측 증가량과 증가 없는 날의 정보가 유지됩니다.
+- 리포트 저장 화면은 전체 시리얼 숨김으로, 카메라 오류 기록은 첫 페이지부터 시작합니다.
+- 기존 이력 형식과 카메라 조회 명령은 유지합니다. 새로운 기종·펌웨어 호환성이 검증된 것은 아닙니다.
+
+---
+
 ## v1.1.0 — 2026-10-07
 
 ### English

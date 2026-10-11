@@ -24,8 +24,8 @@ import (
 )
 
 const (
-	appVersion     = "1.1.0"
-	releaseDate    = "2026-10-07"
+	appVersion     = "1.1.1"
+	releaseDate    = "2026-10-12"
 	validationDate = "2026-09-16"
 	validatedBy    = "@bieup_hieut"
 	workerTimeout  = 12 * time.Second
@@ -311,7 +311,6 @@ var (
 	procRtlMoveMemory            = kernel32.NewProc("RtlMoveMemory")
 	procCreateMutexW             = kernel32.NewProc("CreateMutexW")
 	procCloseHandle              = kernel32.NewProc("CloseHandle")
-	procGetLastError             = kernel32.NewProc("GetLastError")
 	procGetUserDefaultUILanguage = kernel32.NewProc("GetUserDefaultUILanguage")
 	procRegisterClassExW         = user32.NewProc("RegisterClassExW")
 	procCreateWindowExW          = user32.NewProc("CreateWindowExW")
@@ -2950,26 +2949,25 @@ func main() {
 	if len(os.Args) > 1 {
 		return
 	}
+	// All UI startup calls and message dispatch belong to the same OS thread.
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	loadLanguagePreference()
 	refreshUILanguage()
 
 	// Keep one UI instance only, preventing two processes from competing for the same WPD/PTP camera.
-	mutexName := wstr("Local\\LUMIXUsageInfo_UI_Instance")
-	hInstanceMutex, _, _ := procCreateMutexW.Call(0, 0, uintptr(unsafe.Pointer(mutexName)))
-	if hInstanceMutex != 0 {
-		lastErr, _, _ := procGetLastError.Call()
-		if uint32(lastErr) == ERROR_ALREADY_EXISTS {
-			procMessageBoxW.Call(0, uintptr(unsafe.Pointer(wstr(uiText("LUMIX Usage Info is already running.", "LUMIX 사용 정보가 이미 실행 중입니다.")))), uintptr(unsafe.Pointer(wstr("LUMIX Usage Info"))), MB_OK|MB_ICONINFO)
-			procCloseHandle.Call(hInstanceMutex)
-			return
-		}
-		defer procCloseHandle.Call(hInstanceMutex)
+	hInstanceMutex, alreadyRunning, instanceErr := boardAcquireInstance("Local\\LUMIXUsageInfo_UI_Instance")
+	if instanceErr != nil {
+		boardStartupError("CreateMutexW", instanceErr)
+		return
 	}
+	if alreadyRunning {
+		procMessageBoxW.Call(0, uintptr(unsafe.Pointer(wstr(boardText("already_running")))), uintptr(unsafe.Pointer(wstr(productTitle()))), MB_OK|MB_ICONINFO)
+		return
+	}
+	defer procCloseHandle.Call(hInstanceMutex)
 
 	boardInitialize()
-	// Win32 window creation/message dispatch must stay on one OS thread.
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
 
 	enableDPIAwareness()
 	if logoPath, mascotPath, infoPath, exportPath, errorPath, creatorPath, err := extractVisualAssets(); err == nil {
@@ -2991,8 +2989,9 @@ func main() {
 	cursor, _, _ := procLoadCursorW.Call(0, IDC_ARROW)
 	cls := wstr(className)
 	wc := WndClassEx{CbSize: uint32(unsafe.Sizeof(WndClassEx{})), Style: CS_HREDRAW | CS_VREDRAW, LpfnWndProc: syscall.NewCallback(wndProc), HInstance: hInst, HCursor: cursor, LpszClassName: cls}
-	atom, _, _ := procRegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
+	atom, _, classErr := procRegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
 	if atom == 0 {
+		boardStartupError("RegisterClassExW", classErr)
 		return
 	}
 
@@ -3009,8 +3008,9 @@ func main() {
 
 	title := wstr(productTitle() + "  ·  v" + appVersion)
 	// Preserve a readable logical canvas; small viewports scroll and monitors scale it.
-	hwnd, _, _ := procCreateWindowExW.Call(0, uintptr(unsafe.Pointer(cls)), uintptr(unsafe.Pointer(title)), windowStyle, 80, 60, 996, 828, 0, 0, hInst, 0)
+	hwnd, _, windowErr := procCreateWindowExW.Call(0, uintptr(unsafe.Pointer(cls)), uintptr(unsafe.Pointer(title)), windowStyle, 80, 60, 996, 828, 0, 0, hInst, 0)
 	if hwnd == 0 {
+		boardStartupError("CreateWindowExW", windowErr)
 		return
 	}
 	hwndMain = hwnd

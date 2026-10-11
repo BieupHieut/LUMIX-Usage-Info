@@ -28,8 +28,12 @@ func boardCompactRecords(records []boardRecord, body string) ([]boardRecord, int
 			a, b, c := records[indices[j-1]], records[indices[j]], records[indices[j+1]]
 			sh, p, ok := boardDifference(a, b)
 			// Preserve both sides of firmware/verification/model/counter-reset boundaries.
-			_, _, nextOK := boardDifference(b, c)
-			if ok && nextOK && sh == 0 && p == 0 && a.Verified == b.Verified && b.Verified == c.Verified && modelKey(a.Model) == modelKey(b.Model) && modelKey(b.Model) == modelKey(c.Model) {
+			nextSh, nextP, nextOK := boardDifference(b, c)
+			// Keep the last observation before an increase and daily endpoints.
+			// Otherwise cleanup can turn a known daily/monthly/yearly increase
+			// into an unallocated interval, or erase an observed zero day.
+			sameDay := boardPeriodStart(a.Time, 0, time.Local).Equal(boardPeriodStart(b.Time, 0, time.Local)) && boardPeriodStart(b.Time, 0, time.Local).Equal(boardPeriodStart(c.Time, 0, time.Local))
+			if ok && nextOK && sh == 0 && p == 0 && nextSh == 0 && nextP == 0 && sameDay && a.Time.Before(b.Time) && b.Time.Before(c.Time) {
 				remove[indices[j]] = true
 			}
 		}

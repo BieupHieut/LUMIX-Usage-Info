@@ -294,13 +294,14 @@ func boardVersionHistory(hdc uintptr) {
 	boardPanel(hdc)
 	boardPageTitle(hdc, boardText("versions"))
 	boardLabel(hdc, "v"+appVersion+" · "+releaseDate+" · "+boardText("stable_release"), Rect{60, 252, 920, 291}, fontLabel)
-	keys := []string{"release_history", "release_analysis", "release_diagnostic", "release_privacy"}
+	keys := []string{"patch_startup", "patch_history", "patch_privacy", "patch_errors"}
 	for i, k := range keys {
 		boardLabel(hdc, "• "+boardText(k), Rect{75, 310 + int32(i*36), 920, 344 + int32(i*36)}, fontSmall)
 	}
 	boardLabel(hdc, "한국어 · English · 日本語 · Español", Rect{75, 490, 920, 525}, fontSmall)
 	drawHLine(hdc, 60, 548, 920, rgb(65, 68, 75))
-	boardLabel(hdc, "v1.0.0 · 2026-10-03", Rect{60, 570, 920, 607}, fontLabel)
+	boardLabel(hdc, "v1.1.0 · 2026-10-07", Rect{60, 559, 920, 596}, fontLabel)
+	boardLabel(hdc, "v1.0.0 · 2026-10-03", Rect{60, 607, 920, 644}, fontLabel)
 	drawOutlineButton(hdc, backRect, "BACK")
 	boardFooter(hdc)
 }

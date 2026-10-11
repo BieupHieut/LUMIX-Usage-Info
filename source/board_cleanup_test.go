@@ -12,17 +12,17 @@ import (
 )
 
 func TestBoardCleanupBoundaries(t *testing.T) {
-	at := time.Now()
+	at := time.Date(2026, 10, 12, 12, 0, 0, 0, time.Local)
 	mk := func(id, body, fw string, sh, p uint32, minute int) boardRecord {
 		return boardRecord{ID: id, Body: body, Model: "DC-S5", Firmware: fw, Verified: true, Shutter: sh, Power: p, Time: at.Add(time.Duration(minute) * time.Minute)}
 	}
 	records := []boardRecord{mk("a0", "A", "1", 10, 5, 0), mk("b0", "B", "1", 10, 5, 0), mk("a1", "A", "1", 10, 5, 1), mk("b1", "B", "1", 11, 5, 1), mk("a2", "A", "1", 10, 5, 2), mk("a3", "A", "1", 10, 6, 3), mk("a4", "A", "2", 10, 6, 4), mk("a5", "A", "2", 10, 6, 5), mk("a6", "A", "2", 1, 1, 6), mk("a7", "A", "2", 1, 1, 7)}
 	out, n := boardCompactRecords(records, "A")
-	if n != 2 || len(out) != 8 {
+	if n != 1 || len(out) != 9 {
 		t.Fatalf("removed %d: %+v", n, out)
 	}
 	for _, r := range out {
-		if r.ID == "a1" || r.ID == "a2" {
+		if r.ID == "a1" {
 			t.Fatal("duplicate retained")
 		}
 	}

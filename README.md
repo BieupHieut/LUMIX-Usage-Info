@@ -6,13 +6,13 @@
 
 An unofficial, read-only **Windows x64** tool for LUMIX camera information, shutter actuations, power/wake counts and usage history. It does not change camera settings or saved data.
 
-**v1.1.0 · Released 2026-10-07**
+**v1.1.1 · Built 2026-10-12**
 
 ### Download and run
 
-**[Download EXE](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.0/LUMERIAN_LUMIX_Usage_Board_v1.1.0.exe)** · [Windows ZIP](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.0/LUMERIAN_LUMIX_Usage_Board_v1.1.0_Windows.zip) · [Release page](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/tag/v1.1.0)
+**[Download EXE](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.1/LUMERIAN_LUMIX_Usage_Board_v1.1.1.exe)** · [Windows ZIP](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.1/LUMERIAN_LUMIX_Usage_Board_v1.1.1_Windows.zip) · [Release page](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/tag/v1.1.1)
 
-Run `LUMERIAN_LUMIX_Usage_Board_v1.1.0.exe`; no installation is required. Artwork and camera verification data are embedded. The optional `camera_profiles.json` updates the verification list separately.
+Run `LUMERIAN_LUMIX_Usage_Board_v1.1.1.exe`; no installation is required. Artwork and camera verification data are embedded. The optional `camera_profiles.json` updates the verification list separately.
 
 1. Close LUMIX Tether and other camera applications.
 2. Turn on the camera, connect by a data-capable USB cable and select **PC(Tether)**. For **DC-L10**, select **LUMIX Lab**.
@@ -43,13 +43,13 @@ This community project is not affiliated with or endorsed by Panasonic.
 
 LUMIX 카메라 정보·셔터 작동 횟수·전원/깨우기 횟수·사용 이력을 확인하는 비공식 읽기 전용 **Windows x64** 도구입니다. 카메라 설정과 저장 데이터를 변경하지 않습니다.
 
-**v1.1.0 · 릴리즈 2026-10-07**
+**v1.1.1 · 빌드 2026-10-12**
 
 ### 다운로드와 실행
 
-**[EXE 다운로드](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.0/LUMERIAN_LUMIX_Usage_Board_v1.1.0.exe)** · [Windows ZIP](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.0/LUMERIAN_LUMIX_Usage_Board_v1.1.0_Windows.zip) · [릴리즈 페이지](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/tag/v1.1.0)
+**[EXE 다운로드](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.1/LUMERIAN_LUMIX_Usage_Board_v1.1.1.exe)** · [Windows ZIP](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/download/v1.1.1/LUMERIAN_LUMIX_Usage_Board_v1.1.1_Windows.zip) · [릴리즈 페이지](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/tag/v1.1.1)
 
-`LUMERIAN_LUMIX_Usage_Board_v1.1.0.exe`를 실행하면 됩니다. 별도 설치는 필요 없고 이미지와 기종 검증 데이터가 내장되어 있습니다. 선택 파일 `camera_profiles.json`은 검증 목록을 별도로 갱신할 때 사용합니다.
+`LUMERIAN_LUMIX_Usage_Board_v1.1.1.exe`를 실행하면 됩니다. 별도 설치는 필요 없고 이미지와 기종 검증 데이터가 내장되어 있습니다. 선택 파일 `camera_profiles.json`은 검증 목록을 별도로 갱신할 때 사용합니다.
 
 1. LUMIX Tether와 다른 카메라 앱을 종료합니다.
 2. 카메라 전원을 켜고 데이터 전송이 가능한 USB 케이블로 연결한 뒤 **PC(테더)**를 선택합니다. **DC-L10**은 **LUMIX Lab**을 선택합니다.

@@ -78,6 +78,9 @@ func TestBoardRender(t *testing.T) {
 	for _, mode := range []uint32{languageKorean, languageEnglish, languageJapanese, languageSpanish} {
 		atomic.StoreUint32(&languageMode, mode)
 		for _, view := range []string{"export_saved", "history_pages", "details", "history", "credits", "version_hover", "credits_hover", "back_focus", "main", "shutter_help", "storage_skipped", "storage_skipped_raw", "unverified", "serial_last4", "serial_full", "usage_history", "history_selected", "analytics_day", "analytics_month", "analytics_year", "analytics_power", "analytics_empty", "history_bodies", "query_raw", "raw_storage", "diag_failed", "diag_partial", "diagnostics", "storage", "export", "versions", "validation", "waiting", "failure", "language_menu", "status_partial"} {
+			if filter := os.Getenv("LUMERIAN_RENDER_VIEWS"); filter != "" && !strings.Contains(","+filter+",", ","+view+",") {
+				continue
+			}
 			lastResult, boardLatest = baseResult, baseLatest
 			lastSavedPath = ""
 			boardData = baseData

@@ -53,6 +53,12 @@ func boardNavigationClick(id string) bool {
 		"board_diag_raw": "query_raw", "board_home_raw": "query_raw", "board_card_view": "card_info",
 	}
 	if target, ok := targets[id]; ok {
+		if target == "export" && currentView != "export" {
+			exportPreset, exportSerialMode = "public", "masked"
+		}
+		if target == "history" && currentView != "history" {
+			historyPage = 0
+		}
 		if target == "analytics" {
 			if boardBodyIndex == 0 {
 				_, bodies := boardHistoryRows(boardData, 0)

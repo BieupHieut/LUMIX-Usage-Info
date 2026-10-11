@@ -1,6 +1,6 @@
-# LUMERIAN LUMIX Usage Board — v1.1.0
+# LUMERIAN LUMIX Usage Board — v1.1.1
 
-Windows x64 · Stable release · 2026-10-07. Download and run the EXE; no installation is required. Artwork and camera verification data are embedded. The optional camera_profiles.json updates the verification list separately.
+Windows x64 · Build · 2026-10-12. Download and run the EXE; no installation is required. Artwork and camera verification data are embedded. The optional camera_profiles.json updates the verification list separately.
 
 ### Navigation
 
@@ -37,9 +37,9 @@ Successful counter reads are saved locally with a timestamp. **Usage history** w
 
 In **Usage history → Save settings**, export all history to JSON or update the selected copy. Automatic updates follow successful history saves. External file changes stop automatic overwriting until the destination is selected again. Internal history stays in Local AppData. Displayed dates use `YYYY-MM-DD HH:MM:SS`; filenames use `YYYYMMDD_HHMMSS`.
 
-**Save report** provides PNG, TXT and Copy summary, all using the chosen serial privacy. PNG prompts for a destination. TXT goes to the local report folder; Open file / Open folder is available afterwards.
+**Save report** provides PNG, TXT and Copy summary, all using the chosen serial privacy. Each time you open this screen, the serial starts fully hidden; choose Last four or Show all again if needed. PNG prompts for a destination. TXT goes to the local report folder; Open file / Open folder is available afterwards.
 
-Click **Clean duplicates** to remove intermediate records whose shutter AND power counts match the previous observation for the selected body (or all cameras). The first/latest observations and firmware, verification and reset boundaries are retained. Review the deletion count before confirming. A complete local backup is created in `history-backups`; **History folder** takes you there. A failed backup cancels cleanup. External files are kept; their automatic updates are disabled after cleanup, until you explicitly enable them again. To restore a backup, close the app, preserve the current `usage-board.json`, and copy the chosen backup over it.
+Click **Clean duplicates** to remove intermediate records whose shutter AND power counts match both neighbouring observations on the same local date, for the selected body (or all cameras). The first/latest observations, daily endpoints and both sides of counter changes are retained, as are firmware, verification and reset boundaries. Review the deletion count before confirming. A complete local backup is created in `history-backups`; **History folder** takes you there. A failed backup cancels cleanup. External files are kept; their automatic updates are disabled after cleanup, until you explicitly enable them again. To restore a backup, close the app, preserve the current `usage-board.json`, and copy the chosen backup over it.
 
 Hover over or click **!** beside Shutter actuations for the shutdown-shutter explanation. Click again or press Escape to close. The official setting is [Shutter Behavior at Power Off](https://eww.pavc.panasonic.co.jp/dscoi/DC-S1RM2/html/DC-S1RM2_DVQP3245_eng/0130.html). The +1 observation comes from this project's DC-S1RM2 / firmware 1.5 test, not an official counter guarantee for all cameras.
 
@@ -58,6 +58,8 @@ Bars show observed counter increases between comparable readings within the same
 An increase between readings in different periods is shown separately below the chart, across the selected body's entire history, and is not assigned to a bar. It can become comparable in a broader monthly or yearly period. Firmware changes, counter resets, verification changes and deleted intervals are excluded from comparisons. Estimated readings retain an estimated label. Selecting Shutter or Power changes the chart scale independently.
 
 ### Connection problems
+
+If the app reports a startup failure before its main window opens, include the displayed stage and code when contacting support. If it is already running, use the open window.
 
 Open **Connection & diagnostics** using its fixed bottom tab. Select a camera if multiple devices are detected. A running query can be stopped here.
 
