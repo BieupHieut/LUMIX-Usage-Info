@@ -1,60 +1,70 @@
-# User guide
+# LUMERIAN LUMIX Usage Board — v1.1.0
 
-## Download and connect
+Windows x64 · Stable release · 2026-10-07. Download and run the EXE; no installation is required. Artwork and camera verification data are embedded. The optional camera_profiles.json updates the verification list separately.
 
-Use the reader on **Windows x64**. No installation is required; artwork and current verification data are embedded in the EXE.
+### Navigation
 
-1. Download the EXE from [Releases](https://github.com/BieupHieut/LUMIX-Usage-Info/releases/latest).
-2. Close other camera applications on the PC and turn on the camera.
-3. Connect the camera to the PC using a USB cable that supports data transfer.
-4. Select **PC(Tether)** on the camera. For **DC-L10**, select **LUMIX Lab**.
-5. Run the reader and select **CONNECT CAMERA / REFRESH**.
+The same four tabs stay at the bottom, above the language footer before and after connection: **Camera / Usage history / Connection & diagnostics / Compatibility**.
 
-The reader does not change camera settings or data.
-Standard supported cameras need PC(Tether); DC-L10 has been confirmed using LUMIX Lab.
-`camera_profiles.json` is optional and is only needed for [separate verification data updates](CAMERA_DATA.md).
+- Camera: connection and counts; Save report, Technical details and Camera error history.
+- Usage history: records, camera filter, cleanup and Save settings.
+- Connection & diagnostics: retry, received values and diagnostic ZIP.
+- Compatibility: verified and estimated camera combinations.
 
-## Understanding the values
+App information stays at the bottom right. Click the version beside the product name for version history. **The round left-arrow button returns to the screen you entered from** (Escape or Alt+Left also works), including nested pages. Choosing a main tab starts a new navigation path. The Compatibility tab has no duplicate App information or Back buttons.
 
-| Field | Display meaning |
-|---|---|
-| Counter 1 | Power / Wake Activations |
-| Counter 2 | Shutter Actuations |
-| Counter 3 | Flash Activations — estimated |
-| Counter 4 | Power-saving Events — estimated |
-| Counters 5–7 | Unidentified |
+### Connect and read
 
-Counters 1/2 are also marked estimated outside the [verified model/firmware pairs](CAMERA_SUPPORT.md).
-Estimated refers to the **meaning of the counter**, not to an invented number.
+1. Close LUMIX Tether, other camera applications and older copies of this tool.
+2. Turn on the camera, connect it by USB and select **PC(Tether)**. For DC-L10, select **LUMIX Lab**.
+3. On the Lumerian welcome screen, click **Connect camera**.
 
-Shutter actuations can differ from the number of photographs. Power-off shutter closure can add counts on some settings.
-These values do not predict remaining shutter life or failure dates.
-Error descriptions use legacy service-code references; an empty error history does not certify camera health.
+The tool reads information without changing camera settings or saved data, and releases the device after each query. Check Camera compatibility for supported and estimated models. DC-S1 / firmware 2.4 counter support remains on hold.
 
-## Save and share
+### Three information cards
 
-- **SAVE PNG**: choose the purpose and serial visibility, then a destination. **PUBLIC SHARE** hides the serial.
-- **SAVE REPORT**: exports TXT with only the last four serial digits.
-- **COPY SUMMARY**: applies the selected serial visibility and copies to the clipboard.
-- After saving, use **OPEN LAST FILE / OPEN SAVE FOLDER** to locate the result.
+- **My camera:** model, firmware and serial visibility.
+- **Shutter actuations:** cumulative shutter count.
+- **Power / wake activations:** cumulative power/wake count, not battery information.
 
-Default folder: `%LOCALAPPDATA%\Lumerian\LUMIX Usage Info\Reports`
+Unverified meanings retain an Estimated / unverified label; unavailable counts appear as a dash. Counts do not predict remaining shutter life. Click **Read again** to refresh.
 
-## Language and navigation
+Click the serial box to cycle **Hide all → Last four digits → Show all**. Each new query hides it again. Export privacy is selected separately.
 
-The initial language follows Windows: Korean for Korean display language, otherwise English.
-Choose **English / 한국어 / Windows Auto** in the header. Your preference is saved.
+### History and sharing
 
-Tab / Shift+Tab moves focus; Enter / Space activates; Esc closes a menu or goes back.
-Disconnected values are marked as the last read. Reconnect and refresh to read again.
+Successful counter reads are saved locally with a timestamp. **Usage history** works without a connected camera. Choose a body to view its records and changes; multiple bodies of the same model remain separate. History retains the serial suffix and a local identifier, not the full serial. Without a reliable serial, automatic history is not saved.
 
-## Troubleshooting
+In **Usage history → Save settings**, export all history to JSON or update the selected copy. Automatic updates follow successful history saves. External file changes stop automatic overwriting until the destination is selected again. Internal history stays in Local AppData. Displayed dates use `YYYY-MM-DD HH:MM:SS`; filenames use `YYYYMMDD_HHMMSS`.
 
-- **Camera not found**: check the USB data cable and camera USB mode, and close other camera applications. Reconnect and select **CONNECT CAMERA / REFRESH**.
-- **Saving blocked**: if Controlled Folder Access blocks a chosen folder, try the default report folder above.
-- **Camera data warning**: if you placed an external JSON beside the EXE, replace it with the file from this repository or remove it to use the embedded list. Restart the reader.
+**Save report** provides PNG, TXT and Copy summary, all using the chosen serial privacy. PNG prompts for a destination. TXT goes to the local report folder; Open file / Open folder is available afterwards.
 
-## Contact
+Click **Clean duplicates** to remove intermediate records whose shutter AND power counts match the previous observation for the selected body (or all cameras). The first/latest observations and firmware, verification and reset boundaries are retained. Review the deletion count before confirming. A complete local backup is created in `history-backups`; **History folder** takes you there. A failed backup cancels cleanup. External files are kept; their automatic updates are disabled after cleanup, until you explicitly enable them again. To restore a backup, close the app, preserve the current `usage-board.json`, and copy the chosen backup over it.
 
-If you encounter a problem, contact us through [GitHub Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) or [Instagram DM @bieup_hieut](https://www.instagram.com/bieup_hieut/).
-Include the camera model, firmware, reader version and symptoms or error message. You do not need to share the full serial number.
+Hover over or click **!** beside Shutter actuations for the shutdown-shutter explanation. Click again or press Escape to close. The official setting is [Shutter Behavior at Power Off](https://eww.pavc.panasonic.co.jp/dscoi/DC-S1RM2/html/DC-S1RM2_DVQP3245_eng/0130.html). The +1 observation comes from this project's DC-S1RM2 / firmware 1.5 test, not an official counter guarantee for all cameras.
+
+### Select and delete records
+
+Check individual rows in **Usage history**, then click **Delete selected (n)**. Selections remain when paging; changing the camera filter clears them. **Clear selection** unchecks all selected rows. Review the count and confirm before deleting. A complete backup is saved in `history-backups` first; failure to back up cancels deletion. External history copies remain unchanged and automatic overwriting is switched off.
+
+Deletion also marks the removed interval so it is not joined into a misleading increase. After the first selected deletion, manage this history with **v1.1.0 or newer**; earlier builds cannot read its updated format. The backup made before deletion retains the original format. Use the restoration steps above if needed.
+
+### Daily, monthly and yearly analysis
+
+Open **Usage history → Analysis**, choose one camera body, then **Daily / Monthly / Yearly** and **Shutter / Power**. Eight periods are shown at a time; use Previous / Next for older or newer periods. Analysis is available without a connected camera.
+
+Bars show observed counter increases between comparable readings within the same period, not a complete count of photos actually taken in that period. **0** means comparable readings confirmed no increase; **—** means there is no comparable interval. Keep readings over time to build useful comparisons. PC local dates determine the period boundaries.
+
+An increase between readings in different periods is shown separately below the chart, across the selected body's entire history, and is not assigned to a bar. It can become comparable in a broader monthly or yearly period. Firmware changes, counter resets, verification changes and deleted intervals are excluded from comparisons. Estimated readings retain an estimated label. Selecting Shutter or Power changes the chart scale independently.
+
+### Connection problems
+
+Open **Connection & diagnostics** using its fixed bottom tab. Select a camera if multiple devices are detected. A running query can be stopped here.
+
+**Received values** shows connection and query stage results. **Save diagnostic ZIP** saves the latest query, so save a particular failure before retrying. The ZIP excludes full serials, device paths, card labels, filenames and complete raw responses. Nothing is uploaded automatically.
+
+Send the ZIP, symptoms, model and firmware through [GitHub Issues](https://github.com/BieupHieut/LUMIX-Usage-Info/issues) or Instagram DM **@bieup_hieut**.
+
+### Language
+
+The footer offers Windows Auto, Korean, English, Japanese and Spanish. Other Windows languages default to English. Your choice persists.

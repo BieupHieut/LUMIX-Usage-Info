@@ -95,9 +95,9 @@ func paintCameraMatrix(hdc uintptr, r UsageResult) {
 	if cameraPage < 0 || cameraPage >= pages {
 		cameraPage = 0
 	}
-	fillRound(hdc, Rect{40, 180, 940, 655}, rgb(28, 28, 31), 18)
+	boardPanel(hdc)
 	setFont(hdc, fontSection)
-	drawText(hdc, "CAMERA LIST & VALIDATION", Rect{70, 204, 430, 239}, DT_VCENTER|DT_SINGLELINE, rgb(242, 242, 245))
+	boardPageTitle(hdc, "CAMERA LIST & VALIDATION")
 	setFont(hdc, fontTiny)
 	drawText(hdc, fmt.Sprintf(uiText("%d verified · %d estimated", "검증 %d · 지원 추정 %d"), len(cameraData.Profiles), len(items)-len(cameraData.Profiles)), Rect{430, 210, 720, 239}, DT_RIGHT|DT_VCENTER|DT_SINGLELINE, rgb(174, 197, 225))
 	if pages > 1 {
@@ -105,7 +105,7 @@ func paintCameraMatrix(hdc uintptr, r UsageResult) {
 		drawChoiceButton(hdc, cameraNextRect, "›", false)
 	}
 	drawText(hdc, fmt.Sprintf("%d/%d", cameraPage+1, pages), Rect{855, 210, 908, 239}, DT_CENTER|DT_VCENTER|DT_SINGLELINE, rgb(174, 197, 225))
-	drawHLine(hdc, 70, 244, 910, rgb(50, 50, 55))
+
 	start := cameraPage * cameraRowsPerPage
 	end := start + cameraRowsPerPage
 	if end > len(items) {
@@ -146,9 +146,11 @@ func paintCameraMatrix(hdc uintptr, r UsageResult) {
 	}
 	drawText(hdc, note, Rect{72, 603, 906, 625}, DT_CENTER|DT_VCENTER|DT_SINGLELINE, color)
 	drawText(hdc, uiText("Counters 3/4 estimated · 5–7 and error mappings unverified.", "카운터 3/4는 추정 · 5~7과 오류 해석은 미검증"), Rect{72, 628, 906, 650}, DT_CENTER|DT_VCENTER|DT_SINGLELINE, rgb(146, 168, 195))
-	drawOutlineButton(hdc, validationVersionsRect, "VERSION HISTORY")
-	drawOutlineButton(hdc, validationCreditsRect, "DEVELOPER CREDITS")
-	drawOutlineButton(hdc, validationBackRect, "BACK")
+	if !boardEnabled {
+		drawOutlineButton(hdc, validationVersionsRect, "VERSION HISTORY")
+		drawOutlineButton(hdc, validationCreditsRect, "DEVELOPER CREDITS")
+		drawOutlineButton(hdc, validationBackRect, "BACK")
+	}
 	drawFooter(hdc, r, isLiveConnection())
 }
 
@@ -156,16 +158,16 @@ func paintCredits(hdc uintptr, r UsageResult) {
 	if creditsPage < 0 || creditsPage >= creditPages() {
 		creditsPage = 0
 	}
-	fillRound(hdc, Rect{40, 180, 940, 655}, rgb(28, 28, 31), 18)
+	boardPanel(hdc)
 	setFont(hdc, fontSection)
-	drawText(hdc, "CREATOR & CONTRIBUTORS", Rect{70, 204, 540, 235}, DT_VCENTER|DT_SINGLELINE, rgb(242, 242, 245))
+	boardPageTitle(hdc, "CREATOR & CONTRIBUTORS")
 	if creditPages() > 1 {
 		drawChoiceButton(hdc, cameraPreviousRect, "‹", false)
 		drawChoiceButton(hdc, cameraNextRect, "›", false)
 		setFont(hdc, fontTiny)
 		drawText(hdc, fmt.Sprintf("%d/%d", creditsPage+1, creditPages()), Rect{855, 210, 908, 239}, DT_CENTER|DT_VCENTER|DT_SINGLELINE, rgb(174, 197, 225))
 	}
-	drawHLine(hdc, 70, 244, 910, rgb(50, 50, 55))
+
 	// Equal-width columns; creator information stays entirely in the left half.
 	fillRound(hdc, Rect{70, 263, 480, 622}, rgb(34, 34, 38), 14)
 	fillRound(hdc, Rect{500, 263, 910, 622}, rgb(34, 34, 38), 14)

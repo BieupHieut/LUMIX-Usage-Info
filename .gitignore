@@ -18,6 +18,9 @@ Desktop.ini
 .DS_Store
 *.test
 *.prof
+.test-temp/
+LUMERIAN_History*.json
+usage-board.json
 .env
 .env.*
 
@@ -36,3 +39,10 @@ Desktop.ini
 /docs/archive_beta*/
 /docs/comic/
 /docs/L10_*
+
+# Local usage history, diagnostics and generated renders
+/history-backups/
+/investigation/
+/renders/
+LUMERIAN_Diagnostic_*.zip
+LUMERIAN_Diagnostic_*.json

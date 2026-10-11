@@ -16,7 +16,7 @@ func TestProductTitleBothLanguages(t *testing.T) {
 	for _, tc := range []struct {
 		mode uint32
 		want string
-	}{{languageKorean, "LUMERIAN-LUMIX 사용 정보"}, {languageEnglish, "LUMERIAN-LUMIX Usage Info"}} {
+	}{{languageKorean, "LUMERIAN LUMIX Usage Board"}, {languageEnglish, "LUMERIAN LUMIX Usage Board"}, {languageJapanese, "LUMERIAN LUMIX Usage Board"}, {languageSpanish, "LUMERIAN LUMIX Usage Board"}} {
 		atomic.StoreUint32(&languageMode, tc.mode)
 		if productTitle() != tc.want {
 			t.Fatal(productTitle())

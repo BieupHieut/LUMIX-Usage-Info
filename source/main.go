@@ -24,8 +24,8 @@ import (
 )
 
 const (
-	appVersion     = "1.0.0"
-	releaseDate    = "2026-10-03"
+	appVersion     = "1.1.0"
+	releaseDate    = "2026-10-07"
 	validationDate = "2026-09-16"
 	validatedBy    = "@bieup_hieut"
 	workerTimeout  = 12 * time.Second
@@ -93,7 +93,7 @@ const (
 // Embedded visual assets supplied by the user. They are extracted to a temporary
 // directory at runtime so the final EXE stays self-contained.
 //
-//go:embed assets/lumix_logo.bmp
+//go:embed assets/lumerian_wordmark.bmp
 var embeddedLogoBMP []byte
 
 //go:embed assets/mascot_default.bmp
@@ -208,8 +208,10 @@ type DeviceInfo struct {
 }
 
 type WPDDevice struct {
-	ptr  unsafe.Pointer
-	info DeviceInfo
+	ptr           unsafe.Pointer
+	info          DeviceInfo
+	sessionAccess bool
+	trace         boardTransferTrace
 }
 
 type TLV struct {
@@ -422,7 +424,7 @@ var (
 	mascotErrorPath    string
 	creatorAssetPath   string
 
-	fontTitle, fontSubtitle, fontSection, fontLabel, fontValue, fontSmall, fontTiny, fontMicro, fontButton uintptr
+	fontCounter, fontTitle, fontSubtitle, fontSection, fontLabel, fontValue, fontSmall, fontTiny, fontMicro, fontButton uintptr
 
 	connectRect            = Rect{70, 552, 470, 616}
 	welcomeValidationRect  = Rect{510, 552, 910, 616}
@@ -434,26 +436,29 @@ var (
 	saveRect               = Rect{650, 496, 940, 558}
 	guideRect              = Rect{776, 411, 910, 440}
 	serialToggleRect       = Rect{826, 279, 906, 312}
-	backRect               = Rect{390, 675, 590, 724}
-	prevRect               = Rect{70, 675, 220, 724}
-	nextRect               = Rect{760, 675, 910, 724}
-	exportPublicRect       = Rect{75, 296, 450, 360}
-	exportVerifyRect       = Rect{530, 296, 905, 360}
+	backRect               = Rect{40, 136, 80, 176}
+	prevRect               = Rect{70, 604, 220, 640}
+	nextRect               = Rect{760, 604, 910, 640}
+	exportPublicRect       = Rect{60, 296, 480, 338}
+	exportVerifyRect       = Rect{500, 296, 920, 338}
 	exportMaskedRect       = Rect{75, 434, 330, 477}
 	exportLast4Rect        = Rect{365, 434, 620, 477}
 	exportFullRect         = Rect{655, 434, 910, 477}
-	exportSaveRect         = Rect{300, 560, 680, 615}
-	exportCopyRect         = Rect{690, 560, 910, 615}
+	exportSaveRect         = Rect{60, 545, 340, 583}
+	exportTextRect         = Rect{350, 545, 630, 583}
+	exportCopyRect         = Rect{640, 545, 920, 583}
 	validationCamerasRect  = Rect{72, 545, 330, 592}
 	validationVersionsRect = Rect{72, 675, 330, 724}
 	validationCreditsRect  = Rect{362, 675, 620, 724}
-	footerCreditsRect      = Rect{340, 728, 640, 770}
-	footerVersionRect      = Rect{40, 728, 300, 770}
-	languageButtonRect     = Rect{604, 54, 790, 90}
-	languageMenuRect       = Rect{604, 98, 790, 222}
-	languageAutoRect       = Rect{612, 105, 782, 140}
-	languageKoreanRect     = Rect{612, 142, 782, 177}
-	languageEnglishRect    = Rect{612, 179, 782, 214}
+	footerCreditsRect      = Rect{730, 735, 940, 770}
+	footerVersionRect      = Rect{242, 89, 345, 118}
+	languageButtonRect     = Rect{390, 735, 590, 770}
+	languageMenuRect       = Rect{390, 515, 590, 730}
+	languageAutoRect       = Rect{398, 522, 582, 558}
+	languageKoreanRect     = Rect{398, 560, 582, 596}
+	languageEnglishRect    = Rect{398, 598, 582, 634}
+	languageJapaneseRect   = Rect{398, 636, 582, 672}
+	languageSpanishRect    = Rect{398, 674, 582, 710}
 	languageMenuOpen       bool
 )
 
@@ -625,7 +630,8 @@ func setupCommandValues(commandID uint32) (unsafe.Pointer, error) {
 		release(v)
 		return nil, err
 	}
-	// Hard safety invariant: every WPD command is requested with FILE_READ_ACCESS.
+	// Data queries use FILE_READ_ACCESS. The allowlisted session commands
+	// override this in newSessionCommand: WPD classifies no-data commands as RW.
 	if err = valuesSetUI4(v, &PK_IOCTL_ACCESS, FILE_READ_ACCESS); err != nil {
 		release(v)
 		return nil, err
@@ -700,6 +706,9 @@ func (d *WPDDevice) Close() {
 	}
 }
 func openDevice(info DeviceInfo) (*WPDDevice, error) {
+	return openDeviceForSession(info, false)
+}
+func openDeviceForSession(info DeviceInfo, session bool) (*WPDDevice, error) {
 	dev, err := coCreate(&CLSID_PortableDeviceFTM, &IID_IPortableDevice)
 	if err != nil {
 		return nil, err
@@ -710,6 +719,10 @@ func openDevice(info DeviceInfo) (*WPDDevice, error) {
 		return nil, err
 	}
 	defer release(client)
+	if err = boardSetDeviceAccess(client, session); err != nil {
+		release(dev)
+		return nil, err
+	}
 	idp, err := strPtr(info.PnPID)
 	if err != nil {
 		release(dev)
@@ -721,24 +734,27 @@ func openDevice(info DeviceInfo) (*WPDDevice, error) {
 		release(dev)
 		return nil, fmt.Errorf("Camera open failed (%s). Close LUMIX Tether and try again.", hrString(hr))
 	}
-	return &WPDDevice{ptr: dev, info: info}, nil
+	return &WPDDevice{ptr: dev, info: info, sessionAccess: session}, nil
 }
 func (d *WPDDevice) send(params unsafe.Pointer) (unsafe.Pointer, error) {
 	var result unsafe.Pointer
 	hr := comCall(d.ptr, 4, 0, uintptr(params), uintptr(unsafe.Pointer(&result)))
 	if hrFailed(hr) {
-		return nil, fmt.Errorf("SendCommand: %s", hrString(hr))
+		release(result)
+		return nil, &boardWPDError{Origin: "send_command", Err: fmt.Errorf("SendCommand: %s", hrString(hr))}
 	}
 	if result == nil {
 		return nil, errors.New("no WPD result")
 	}
 	if err := checkCommandHRESULT(result); err != nil {
+		rc, _ := valuesGetUI4(result, &PK_MTP_RESPONSE_CODE)
 		release(result)
-		return nil, err
+		return nil, &boardWPDError{Origin: "driver_hresult", Err: err, PTP: rc}
 	}
 	return result, nil
 }
 func (d *WPDDevice) SendReadPTP(opcode uint32, args []uint32) ([]byte, uint32, error) {
+	d.trace = boardTransferTrace{Phase: "request_build"}
 	p, err := setupCommandValues(CMD_EXECUTE_DATA_TO_READ)
 	if err != nil {
 		return nil, 0, err
@@ -758,16 +774,27 @@ func (d *WPDDevice) SendReadPTP(opcode uint32, args []uint32) ([]byte, uint32, e
 		return nil, 0, err
 	}
 	release(coll)
+	d.trace.Phase = "begin_transfer"
 	initial, err := d.send(p)
 	release(p)
 	if err != nil {
 		return nil, 0, err
 	}
+	d.trace.Phase = "transfer_context"
 	context, err := valuesGetString(initial, &PK_MTP_CONTEXT)
 	if err != nil {
 		release(initial)
 		return nil, 0, err
 	}
+	ended := false
+	defer func() {
+		if !ended {
+			rc, e := d.endReadTransfer(context)
+			d.trace.EndPTP = rc
+			d.trace.EndCode = boardErrorCode(e)
+		}
+	}()
+	d.trace.Phase = "transfer_size"
 	total, err8 := valuesGetUI8(initial, &PK_MTP_TOTAL_SIZE)
 	if err8 != nil {
 		if v, e := valuesGetUI4(initial, &PK_MTP_TOTAL_SIZE); e == nil {
@@ -777,6 +804,8 @@ func (d *WPDDevice) SendReadPTP(opcode uint32, args []uint32) ([]byte, uint32, e
 			return nil, 0, err8
 		}
 	}
+	d.trace.Total = total
+	d.trace.TotalKnown = true
 	release(initial)
 	const maxRead = 2 * 1024 * 1024
 	const chunkSize = 64 * 1024
@@ -809,6 +838,8 @@ func (d *WPDDevice) SendReadPTP(opcode uint32, args []uint32) ([]byte, uint32, e
 			release(rp)
 			return nil, 0, e
 		}
+		d.trace.Phase = "read_data"
+		d.trace.Reads++
 		rr, e := d.send(rp)
 		release(rp)
 		if e != nil {
@@ -821,33 +852,54 @@ func (d *WPDDevice) SendReadPTP(opcode uint32, args []uint32) ([]byte, uint32, e
 		}
 		actual, ae := valuesGetUI4(rr, &PK_MTP_NUM_READ)
 		release(rr)
+		if len(chunk) > int(n) || (ae == nil && actual > uint32(len(chunk))) {
+			return nil, 0, errors.New("invalid transfer length")
+		}
 		if ae == nil && actual < uint32(len(chunk)) {
 			chunk = chunk[:actual]
 		}
 		data = append(data, chunk...)
+		d.trace.Received = len(data)
 		if len(chunk) < int(n) || len(chunk) == 0 {
 			break
 		}
 	}
-	ep, err := setupCommandValues(CMD_END_DATA_TRANSFER)
+	ended = true
+	d.trace.Phase = "end_transfer"
+	response, err := d.endReadTransfer(context)
+	d.trace.EndPTP = response
+	d.trace.EndCode = boardErrorCode(err)
 	if err != nil {
 		return data, 0, err
 	}
+	if (!unknown && uint64(len(data)) != total) || (unknown && len(data) >= maxRead) {
+		return nil, response, errors.New("incomplete camera transfer")
+	}
+	d.trace.Phase = "complete"
+	return data, response, nil
+}
+
+func (d *WPDDevice) endReadTransfer(context string) (uint32, error) {
+	d.trace.EndAttempted = true
+	ep, err := setupCommandValues(CMD_END_DATA_TRANSFER)
+	if err != nil {
+		return 0, err
+	}
 	if err = valuesSetString(ep, &PK_MTP_CONTEXT, context); err != nil {
 		release(ep)
-		return data, 0, err
+		return 0, err
 	}
 	er, err := d.send(ep)
 	release(ep)
 	if err != nil {
-		return data, 0, err
+		return 0, err
 	}
 	response, rerr := valuesGetUI4(er, &PK_MTP_RESPONSE_CODE)
 	release(er)
 	if rerr != nil {
-		return data, 0, rerr
+		return 0, rerr
 	}
-	return data, response, nil
+	return response, nil
 }
 
 func readPTPString(b []byte, off *int) (string, bool) {
@@ -1103,9 +1155,11 @@ func parseUsageRaw(raw []byte) (UsageResult, error) {
 		if t.Tag == SETUP_INFO_REPLY && len(t.Data) >= 146 {
 			d := t.Data
 			for i := 0; i < 16; i++ {
-				off := i * 8
+				// SetupInfo stores two arrays: 16 dates, then 16 error codes.
+				// The seven counters start after both arrays at byte 128.
+				off := i * 4
 				dateRaw := binary.LittleEndian.Uint32(d[off : off+4])
-				code := binary.LittleEndian.Uint32(d[off+4 : off+8])
+				code := binary.LittleEndian.Uint32(d[64+off : 68+off])
 				if code == 0 {
 					continue
 				}
@@ -1366,6 +1420,9 @@ func formatDelta(v int64) string {
 }
 
 func buildSummary(r UsageResult, serialMode string) string {
+	if boardLanguage() == languageJapanese || boardLanguage() == languageSpanish {
+		return boardLocalizedReport(r, serialMode)
+	}
 	status, _ := validationLabel(r)
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s v%s\r\n", uiText("LUMIX Usage Info", "LUMIX 사용 정보"), appVersion)
@@ -1763,12 +1820,20 @@ func fillRound(hdc uintptr, r Rect, color uintptr, radius int32) {
 	procDeleteObject.Call(b)
 }
 func drawButton(hdc uintptr, r Rect, label string) {
+	if boardEnabled {
+		boardPrimaryButton(hdc, r, label)
+		return
+	}
 	defer decorateAction(hdc, r)
 	fillRound(hdc, r, actionColor(r, rgb(245, 245, 245)), 12)
 	setFont(hdc, fontButton)
 	drawText(hdc, label, Rect{r.L, r.T, r.R, r.B}, DT_CENTER|DT_VCENTER|DT_SINGLELINE, actionColor(r, rgb(22, 22, 24)))
 }
 func drawOutlineButton(hdc uintptr, r Rect, label string) {
+	if boardEnabled && r == backRect {
+		boardBackIcon(hdc)
+		return
+	}
 	defer decorateAction(hdc, r)
 	fillRound(hdc, r, actionColor(r, rgb(42, 42, 46)), 10)
 	setFont(hdc, fontSmall)
@@ -1792,7 +1857,7 @@ func drawDashboardCard(hdc uintptr, r Rect, number, title, subtitle string, acce
 
 func paintLanguageMenu(hdc uintptr) {
 	fillRound(hdc, languageMenuRect, rgb(72, 86, 108), 13)
-	fillRound(hdc, Rect{606, 100, 788, 220}, rgb(31, 34, 42), 12)
+	fillRound(hdc, Rect{392, 517, 588, 728}, rgb(31, 34, 42), 12)
 	mode := atomic.LoadUint32(&languageMode)
 	items := []struct {
 		rect  Rect
@@ -1802,6 +1867,8 @@ func paintLanguageMenu(hdc uintptr) {
 		{languageAutoRect, languageAuto, uiText("Windows Auto", "Windows 자동")},
 		{languageKoreanRect, languageKorean, "한국어"},
 		{languageEnglishRect, languageEnglish, "English"},
+		{languageJapaneseRect, languageJapanese, "日本語"},
+		{languageSpanishRect, languageSpanish, "Español"},
 	}
 	for _, item := range items {
 		if item.mode == mode {
@@ -1859,6 +1926,10 @@ func selectMascot(st, view, notice string) BitmapInfo {
 }
 
 func paintHeader(hdc uintptr, st, view, notice string) {
+	if boardEnabled {
+		boardHeader(hdc, view)
+		return
+	}
 	drawBitmap(hdc, logoBitmap, 40, 24)
 	// A fixed character slot keeps language controls stable across every page.
 	drawBitmap(hdc, selectMascot(st, view, notice), 802, 24)
@@ -1909,6 +1980,10 @@ func paintScene(hdc uintptr, width, height int32) {
 	stateMu.Unlock()
 
 	paintHeader(hdc, st, view, notice)
+	if boardEnabled && boardView(view) {
+		boardPaint(hdc, view)
+		return
+	}
 
 	// Project information remains accessible even without a connected camera.
 	if isProjectInfoView(view) {
@@ -2114,12 +2189,8 @@ func paintUsage(hdc uintptr, r UsageResult) {
 }
 
 func paintDetails(hdc uintptr, r UsageResult) {
-	fillRound(hdc, Rect{40, 180, 940, 655}, rgb(28, 28, 31), 18)
-	setFont(hdc, fontSection)
-	drawText(hdc, "TECHNICAL DETAILS", Rect{70, 204, 420, 235}, DT_VCENTER|DT_LEFT|DT_SINGLELINE, rgb(242, 242, 245))
-	setFont(hdc, fontSmall)
-	drawText(hdc, "Read-only service data · No camera data modified", Rect{470, 208, 906, 233}, DT_VCENTER|DT_RIGHT|DT_SINGLELINE, rgb(146, 154, 168))
-	drawHLine(hdc, 70, 244, 910, rgb(50, 50, 55))
+	boardPanel(hdc)
+	boardPageTitle(hdc, "TECHNICAL DETAILS")
 
 	type drow struct{ label, value, status string }
 	var rows []drow
@@ -2162,12 +2233,8 @@ func paintDetails(hdc uintptr, r UsageResult) {
 }
 
 func paintGuide(hdc uintptr, r UsageResult) {
-	fillRound(hdc, Rect{40, 180, 940, 655}, rgb(28, 28, 31), 18)
-	setFont(hdc, fontSection)
-	drawText(hdc, "WHAT COUNTS?", Rect{70, 204, 330, 235}, DT_VCENTER|DT_LEFT|DT_SINGLELINE, rgb(242, 242, 245))
-	setFont(hdc, fontSmall)
-	drawText(hdc, "Observed on DC-S1RM2 · Firmware 1.5", Rect{560, 208, 906, 233}, DT_VCENTER|DT_RIGHT|DT_SINGLELINE, rgb(146, 154, 168))
-	drawHLine(hdc, 70, 244, 910, rgb(50, 50, 55))
+	boardPanel(hdc)
+	boardPageTitle(hdc, "WHAT COUNTS?")
 
 	// Left column: shutter behavior
 	setFont(hdc, fontSection)
@@ -2220,12 +2287,8 @@ func paintGuide(hdc uintptr, r UsageResult) {
 }
 
 func paintExport(hdc uintptr, r UsageResult) {
-	fillRound(hdc, Rect{40, 180, 940, 669}, rgb(28, 28, 31), 18)
-	setFont(hdc, fontSection)
-	drawText(hdc, "EXPORT / SHARE", Rect{70, 204, 390, 235}, DT_VCENTER|DT_LEFT|DT_SINGLELINE, rgb(242, 242, 245))
-	setFont(hdc, fontSmall)
-	drawText(hdc, "Create a clean PNG or copy a text summary", Rect{520, 208, 906, 233}, DT_VCENTER|DT_RIGHT|DT_SINGLELINE, rgb(146, 154, 168))
-	drawHLine(hdc, 70, 244, 910, rgb(50, 50, 55))
+	boardPanel(hdc)
+	boardPageTitle(hdc, "EXPORT / SHARE")
 
 	stateMu.Lock()
 	preset := exportPreset
@@ -2237,7 +2300,7 @@ func paintExport(hdc uintptr, r UsageResult) {
 	drawChoiceButton(hdc, exportPublicRect, "PUBLIC SHARE", preset == "public")
 	drawChoiceButton(hdc, exportVerifyRect, "DEVICE VERIFICATION", preset == "verify")
 	setFont(hdc, fontSmall)
-	drawText(hdc, "Public Share masks the serial. Device Verification starts with Last 4 digits; Full Serial is optional.", Rect{75, 368, 905, 394}, DT_VCENTER|DT_LEFT|DT_SINGLELINE, rgb(150, 150, 160))
+	drawText(hdc, "Public Share masks the serial. Device Verification starts with Last 4 digits; Full Serial is optional.", Rect{60, 347, 920, 391}, DT_LEFT|0x10, rgb(150, 150, 160))
 
 	setFont(hdc, fontSection)
 	drawText(hdc, "2. SERIAL NUMBER IN EXPORT", Rect{72, 398, 500, 430}, DT_VCENTER|DT_LEFT|DT_SINGLELINE, rgb(238, 238, 242))
@@ -2260,13 +2323,14 @@ func paintExport(hdc uintptr, r UsageResult) {
 	} else {
 		drawButton(hdc, exportSaveRect, "SAVE PNG")
 	}
+	drawOutlineButton(hdc, exportTextRect, boardText("text_report"))
 	drawOutlineButton(hdc, exportCopyRect, "COPY SUMMARY")
 	paintSavedActions(hdc, true)
 	setFont(hdc, fontSmall)
 	if notice != "" {
-		drawText(hdc, notice, Rect{75, 624, 905, 668}, DT_CENTER|0x10|0x2000|0x8000, rgb(167, 200, 240))
+		drawText(hdc, notice, Rect{60, 641, 920, 672}, DT_CENTER|0x10|0x2000|0x8000, rgb(167, 200, 240))
 	} else {
-		drawText(hdc, uiText("Choose where to save PNG. Default: Local AppData · Lumerian · Reports.", "PNG 저장 위치를 선택하세요. 기본 위치: 로컬 AppData · Lumerian · Reports."), Rect{75, 624, 905, 668}, DT_CENTER|0x10|0x2000|0x8000, rgb(146, 154, 168))
+		drawText(hdc, boardText("export_destination"), Rect{60, 641, 920, 672}, DT_CENTER|0x10|0x2000|0x8000, rgb(146, 154, 168))
 	}
 	drawOutlineButton(hdc, backRect, "BACK")
 	drawFooter(hdc, r, true)
@@ -2275,7 +2339,11 @@ func paintExport(hdc uintptr, r UsageResult) {
 func paintValidation(hdc uintptr, r UsageResult) { paintCameraMatrix(hdc, r) }
 
 func paintVersionHistory(hdc uintptr, r UsageResult) {
-	fillRound(hdc, Rect{40, 180, 940, 655}, rgb(28, 28, 31), 18)
+	if boardEnabled {
+		boardVersionHistory(hdc)
+		return
+	}
+	boardPanel(hdc)
 	setFont(hdc, fontSection)
 	drawText(hdc, "VERSION HISTORY", Rect{70, 204, 520, 235}, DT_VCENTER|DT_SINGLELINE, rgb(242, 242, 245))
 	drawHLine(hdc, 70, 244, 910, rgb(50, 50, 55))
@@ -2299,21 +2367,8 @@ func paintVersionHistory(hdc uintptr, r UsageResult) {
 }
 
 func paintHistory(hdc uintptr, r UsageResult) {
-	// Dedicated focused view: the ERROR HISTORY button must never feel like a no-op.
-	fillRound(hdc, Rect{38, 178, 942, 657}, rgb(56, 108, 168), 18)
-	fillRound(hdc, Rect{42, 182, 938, 653}, rgb(28, 28, 31), 16)
-	setFont(hdc, fontSection)
-	drawText(hdc, "ERROR HISTORY DETAILS", Rect{70, 204, 420, 235}, DT_VCENTER|DT_LEFT|DT_SINGLELINE, rgb(242, 242, 245))
-	setFont(hdc, fontSmall)
-	stateMu.Lock()
-	opened := historyOpenedAt
-	stateMu.Unlock()
-	if !opened.IsZero() && time.Since(opened) < 4*time.Second {
-		drawText(hdc, "● FOCUSED VIEW · Error History opened", Rect{430, 208, 906, 233}, DT_VCENTER|DT_RIGHT|DT_SINGLELINE, rgb(167, 200, 240))
-	} else {
-		drawText(hdc, "Up to 16 service-history records · legacy Panasonic reference codes", Rect{390, 208, 906, 233}, DT_VCENTER|DT_RIGHT|DT_SINGLELINE, rgb(146, 154, 168))
-	}
-	drawHLine(hdc, 70, 244, 910, rgb(50, 50, 55))
+	boardPanel(hdc)
+	boardPageTitle(hdc, "ERROR HISTORY DETAILS")
 	if len(r.Errors) == 0 {
 		setFont(hdc, fontLabel)
 		drawText(hdc, "No recorded non-zero error codes found.", Rect{72, 300, 906, 332}, DT_VCENTER|DT_CENTER|DT_SINGLELINE, rgb(205, 205, 212))
@@ -2359,11 +2414,16 @@ func paintHistory(hdc uintptr, r UsageResult) {
 			drawOutlineButton(hdc, nextRect, "NEXT")
 		}
 	}
+	boardLabel(hdc, uiText("Legacy error-code references · Interpretations unverified", "기존 오류 코드 참고 자료 · 오류 해석 미검증"), Rect{60, 643, 920, 669}, fontTiny)
 	drawOutlineButton(hdc, backRect, "BACK")
 	drawFooter(hdc, r, true)
 }
 
 func drawFooter(hdc uintptr, r UsageResult, connected bool) {
+	if boardEnabled {
+		boardFooter(hdc)
+		return
+	}
 	setFont(hdc, fontSmall)
 	drawText(hdc, "v"+appVersion, Rect{40, 736, 300, 764}, DT_VCENTER|DT_LEFT|DT_SINGLELINE, actionColor(footerVersionRect, rgb(173, 181, 194)))
 	drawText(hdc, "Made by @bieup_hieut · CREDITS", Rect{340, 736, 640, 764}, DT_VCENTER|DT_CENTER|DT_SINGLELINE, actionColor(footerCreditsRect, rgb(173, 181, 194)))
@@ -2385,75 +2445,7 @@ func drawFooter(hdc uintptr, r UsageResult, connected bool) {
 	}
 }
 
-func startProbe(force bool) {
-	stateMu.Lock()
-	if l10View(currentView) {
-		stateMu.Unlock()
-		return
-	}
-	if probeBusy {
-		stateMu.Unlock()
-		return
-	}
-	if !force && appState == "connected" {
-		stateMu.Unlock()
-		return
-	}
-	if !force && !lastProbeAt.IsZero() && time.Since(lastProbeAt) < 4*time.Second {
-		stateMu.Unlock()
-		return
-	}
-	preserveExisting := lastResult.Model != ""
-	probeBusy = true
-	lastError = ""
-	lastProbeAt = time.Now()
-	if preserveExisting {
-		uiNotice = "Refreshing camera data..."
-	} else {
-		appState = "connecting"
-		uiNotice = ""
-	}
-	stateMu.Unlock()
-	procInvalidateRect.Call(hwndMain, 0, 0)
-
-	go func(keepExisting bool) {
-		res, err := probeCameraViaWorker()
-		stateMu.Lock()
-		probeBusy = false
-		if err != nil {
-			if keepExisting {
-				appState = "disconnected"
-				lastError = err.Error()
-				uiNotice = "Camera disconnected or unavailable. Showing last known data."
-			} else {
-				appState = "error"
-				lastError = err.Error()
-				if isProjectInfoView(currentView) {
-					uiNotice = "Camera not connected. Project information remains available offline."
-				} else {
-					uiNotice = ""
-				}
-			}
-		} else {
-			if keepExisting && sameCamera(lastResult, res) {
-				deltaShutter = int64(res.Shutter) - int64(lastResult.Shutter)
-				deltaPowerWake = int64(res.PowerWake) - int64(lastResult.PowerWake)
-				hasDelta = true
-			} else {
-				hasDelta = false
-				deltaShutter = 0
-				deltaPowerWake = 0
-			}
-			lastResult = res
-			appState = "connected"
-			lastError = ""
-			historyPage = 0
-			uiNotice = "Camera read completed."
-		}
-		stateMu.Unlock()
-		procPostMessageW.Call(hwndMain, WM_APP_RESULT, 0, 0)
-	}(preserveExisting)
-}
+func startProbe(force bool) { boardStart() }
 
 func saveReport() {
 	stateMu.Lock()
@@ -2462,6 +2454,7 @@ func saveReport() {
 		return
 	}
 	r := lastResult
+	serialMode := exportSerialMode
 	reportBusy = true
 	uiNotice = "Saving report..."
 	stateMu.Unlock()
@@ -2469,15 +2462,7 @@ func saveReport() {
 	go func() {
 		dir := preferredReportDir()
 
-		status := "UNVERIFIED MODEL / FIRMWARE"
-		validator, verifiedDate := validationDetails(r)
-		if r.SemanticsVerified {
-			status = "VERIFIED " + r.Model + " / " + r.Firmware
-		} else if r.VerifiedModel {
-			status = "MODEL VERIFIED / FIRMWARE UNVERIFIED"
-		}
-
-		data := buildReport(r, status, validator, verifiedDate)
+		data := boardExportReport(r, serialMode)
 		path, err := writeUniqueReport(dir, []byte(data), time.Now())
 		name := filepath.Base(path)
 		stateMu.Lock()
@@ -2507,40 +2492,32 @@ func wndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
 		paintWindow(hwnd)
 		return 0
 	case WM_TIMER:
-		stateMu.Lock()
-		st := appState
-		busy := probeBusy
-		last := lastProbeAt
-		stateMu.Unlock()
-		if !busy && st == "waiting" && (last.IsZero() || time.Since(last) >= 4*time.Second) {
-			startProbe(false)
-		}
 		return 0
 	case WM_APP_RESULT:
+		stateMu.Lock()
+		closing := boardClosing && !probeBusy && !pngBusy && !reportBusy
+		stateMu.Unlock()
+		if closing {
+			user32.NewProc("DestroyWindow").Call(hwnd)
+			return 0
+		}
 		procInvalidateRect.Call(hwnd, 0, 0)
 		return 0
 	case WM_DEVICECHANGE:
-		evt := uint32(wParam)
-		if evt == DBT_DEVICEREMOVECOMPLETE || evt == DBT_DEVNODES_CHANGED {
-			stateMu.Lock()
-			shouldCheck := lastResult.Model != "" && !probeBusy
-			if shouldCheck {
-				uiNotice = "USB device change detected. Checking camera connection..."
-			}
-			stateMu.Unlock()
-			if shouldCheck {
-				startProbe(true)
-			}
-		} else if evt == DBT_DEVICEARRIVAL {
-			stateMu.Lock()
-			st := appState
-			busy := probeBusy
-			stateMu.Unlock()
-			if !busy && (st == "waiting" || st == "error" || st == "disconnected") {
-				startProbe(true)
-			}
-		}
+		// Device arrival is not authorization to query service information.
 		return 0
+	case 0x0010: // WM_CLOSE: allow owned-session cleanup before closing.
+		stateMu.Lock()
+		busy := probeBusy || pngBusy || reportBusy
+		if busy {
+			boardClosing = true
+			boardNotice = "closing_app"
+		}
+		stateMu.Unlock()
+		if busy {
+			procInvalidateRect.Call(hwnd, 0, 0)
+			return 0
+		}
 	case WM_DESTROY:
 		stateMu.Lock()
 		cancel := l10State.Cancel
@@ -2576,9 +2553,20 @@ func handleClick(hwnd uintptr, x, y int32) uintptr {
 			{languageAutoRect, languageAuto},
 			{languageKoreanRect, languageKorean},
 			{languageEnglishRect, languageEnglish},
+			{languageJapaneseRect, languageJapanese},
+			{languageSpanishRect, languageSpanish},
 		} {
 			if pointIn(option.rect, x, y) {
 				languageSaveError = setLanguagePreference(option.mode)
+				if boardEnabled {
+					stateMu.Lock()
+					if languageSaveError != nil {
+						boardNotice = "language_unsaved"
+					} else if boardNotice == "language_unsaved" {
+						boardNotice = ""
+					}
+					stateMu.Unlock()
+				}
 				languageMenuOpen = false
 				updateWindowLanguage(hwnd)
 				return 0
@@ -2586,6 +2574,9 @@ func handleClick(hwnd uintptr, x, y int32) uintptr {
 		}
 		languageMenuOpen = false
 		procInvalidateRect.Call(hwnd, 0, 0)
+		return 0
+	}
+	if boardEnabled && boardClick(x, y) {
 		return 0
 	}
 	stateMu.Lock()
@@ -2752,6 +2743,10 @@ func handleClick(hwnd uintptr, x, y int32) uintptr {
 			exportSerialMode = "full"
 			stateMu.Unlock()
 			procInvalidateRect.Call(hwndMain, 0, 0)
+			return 0
+		}
+		if pointIn(exportTextRect, x, y) {
+			saveReport()
 			return 0
 		}
 		if pointIn(exportSaveRect, x, y) {
@@ -2946,6 +2941,9 @@ func main() {
 		return
 	}
 
+	if len(os.Args) > 1 && os.Args[1] == "--board-worker" {
+		os.Exit(boardWorker())
+	}
 	if len(os.Args) > 1 && os.Args[1] == "--probe-worker" {
 		os.Exit(runProbeWorker())
 	}
@@ -2968,6 +2966,7 @@ func main() {
 		defer procCloseHandle.Call(hInstanceMutex)
 	}
 
+	boardInitialize()
 	// Win32 window creation/message dispatch must stay on one OS thread.
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
@@ -2997,6 +2996,7 @@ func main() {
 		return
 	}
 
+	fontCounter = createFont(-40, FW_BOLD)
 	fontTitle = createFont(-28, FW_BOLD)
 	fontSubtitle = createFont(-15, FW_NORMAL)
 	fontSection = createFont(-19, FW_SEMIBOLD)
@@ -3019,8 +3019,7 @@ func main() {
 	procUpdateWindow.Call(hwnd)
 	procSetTimer.Call(hwnd, 1, 2500, 0)
 
-	// Start one non-blocking auto-detect attempt after the window is visible.
-	startProbe(false)
+	// Camera queries are initiated only by an explicit user action.
 
 	var m Msg
 	for {
@@ -3032,7 +3031,7 @@ func main() {
 		procDispatchMessageW.Call(uintptr(unsafe.Pointer(&m)))
 	}
 
-	for _, f := range []uintptr{fontTitle, fontSubtitle, fontSection, fontLabel, fontValue, fontSmall, fontTiny, fontMicro, fontButton} {
+	for _, f := range []uintptr{fontCounter, fontTitle, fontSubtitle, fontSection, fontLabel, fontValue, fontSmall, fontTiny, fontMicro, fontButton} {
 		if f != 0 {
 			procDeleteObject.Call(f)
 		}

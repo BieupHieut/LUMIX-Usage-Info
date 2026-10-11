@@ -27,6 +27,46 @@ func TestRejectTruncatedOrAmbiguousServiceReply(t *testing.T) {
 		}
 	}
 }
+
+func TestUsageErrorHistoryUsesSeparateDateAndCodeArrays(t *testing.T) {
+	// Synthetic wire fixture, based on the official Tether 2.9/2.12 parser:
+	// 16 uint32 dates, then 16 uint32 codes, followed by the seven counters.
+	// Nonzero dates with zero codes must not become phantom error records.
+	raw := make([]byte, 154)
+	binary.LittleEndian.PutUint32(raw, SETUP_INFO_REPLY)
+	binary.LittleEndian.PutUint32(raw[4:], 146)
+	body := raw[8:]
+	for i := 0; i < 16; i++ {
+		binary.LittleEndian.PutUint32(body[i*4:], uint32(0x26100600+i))
+	}
+	wantSlots := []int{0, 7, 15}
+	wantCodes := []uint32{0x01020001, 0x02030002, 0x03040003}
+	for i, slot := range wantSlots {
+		binary.LittleEndian.PutUint32(body[64+slot*4:], wantCodes[i])
+	}
+	binary.LittleEndian.PutUint32(body[128:], 3996)
+	binary.LittleEndian.PutUint32(body[132:], 39143)
+	for i := 0; i < 5; i++ {
+		binary.LittleEndian.PutUint16(body[136+i*2:], uint16(101+i))
+	}
+	r, err := parseUsageRaw(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(r.Errors) != len(wantSlots) {
+		t.Fatalf("got %d errors, want %d: %+v", len(r.Errors), len(wantSlots), r.Errors)
+	}
+	for i, slot := range wantSlots {
+		e := r.Errors[i]
+		if e.Index != slot+1 || e.DateRaw != uint32(0x26100600+slot) || e.Code != wantCodes[i] {
+			t.Errorf("slot %d date/code mismatch: %+v", slot, e)
+		}
+	}
+	if r.PowerWake != 3996 || r.Shutter != 39143 || r.Raw3 != 101 || r.Raw4 != 102 || r.Raw5 != 103 || r.Raw6 != 104 || r.Raw7 != 105 {
+		t.Fatalf("error decoding changed counter offsets: %+v", r)
+	}
+}
+
 func TestPNGReplacementFailurePreservesExistingFile(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "share.png")
@@ -79,6 +119,7 @@ func TestCameraDataRejectsInvalidMetadata(t *testing.T) {
 }
 func TestCameraAdditionDoesNotChangeAppVersion(t *testing.T) {
 	prior := cameraData
+	beforeVersion := appVersion
 	defer func() { cameraData = prior; cameraPage = 0 }()
 	r := mustBundledCameraData()
 	r.Revision = "2026-10-03"
@@ -91,7 +132,7 @@ func TestCameraAdditionDoesNotChangeAppVersion(t *testing.T) {
 	cameraData = loaded
 	sample := UsageResult{Model: "DC-S9", Firmware: "Ver. 2.0"}
 	applyValidationStatus(&sample)
-	if !sample.SemanticsVerified || appVersion != "1.0.0" {
+	if !sample.SemanticsVerified || appVersion != beforeVersion {
 		t.Fatal("data-only addition failed")
 	}
 	sample.Firmware = "Ver. 2.1"

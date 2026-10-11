@@ -46,8 +46,8 @@ var (
 	lastSavedPath                               string // Guarded by stateMu, like export state.
 	openFileRect                                = Rect{290, 690, 480, 719}
 	openFolderRect                              = Rect{500, 690, 690, 719}
-	exportOpenFileRect                          = Rect{75, 552, 285, 580}
-	exportOpenFolderRect                        = Rect{75, 589, 285, 617}
+	exportOpenFileRect                          = Rect{60, 597, 310, 632}
+	exportOpenFolderRect                        = Rect{320, 597, 570, 632}
 )
 
 type scrollInfo struct {
@@ -138,6 +138,14 @@ func beginViewport(hdc uintptr) func() {
 }
 
 func visibleActions() []uiAction {
+	if boardEnabled {
+		stateMu.Lock()
+		v := currentView
+		stateMu.Unlock()
+		if boardView(v) || languageMenuOpen {
+			return boardActions()
+		}
+	}
 	stateMu.Lock()
 	st, view, r := appState, currentView, lastResult
 	pb, rb, busy := pngBusy, reportBusy, probeBusy
@@ -153,11 +161,11 @@ func visibleActions() []uiAction {
 	if languageMenuOpen {
 		return append(a, uiAction{"langAuto", languageAutoRect, !pb && !rb && !l10Busy}, uiAction{"langKo", languageKoreanRect, !pb && !rb && !l10Busy}, uiAction{"langEn", languageEnglishRect, !pb && !rb && !l10Busy})
 	}
-	a = append(a, uiAction{"versions", footerVersionRect, !pb && !l10Active}, uiAction{"credits", footerCreditsRect, !pb && !l10Active})
+	a = append(a, uiAction{"versions", footerVersionRect, !pb && !rb && !l10Active}, uiAction{"credits", footerCreditsRect, !pb && !rb && !l10Active})
 	if l10Active {
 		return append(a, l10Actions(view)...)
 	}
-	add := func(id string, r Rect, enabled bool) { a = append(a, uiAction{id, r, enabled && !pb}) }
+	add := func(id string, r Rect, enabled bool) { a = append(a, uiAction{id, r, enabled && !pb && !rb}) }
 	readable := st == "connected" || (st == "disconnected" && r.Model != "")
 	if !readable && !isProjectInfoView(view) {
 		add("connect", connectRect, !busy)
@@ -173,6 +181,7 @@ func visibleActions() []uiAction {
 		add("full", exportFullRect, true)
 		add("png", exportSaveRect, st == "connected" && !busy)
 		add("copy", exportCopyRect, true)
+		add("text", exportTextRect, st == "connected" && !busy)
 		if saved {
 			add("file", exportOpenFileRect, true)
 			add("folder", exportOpenFolderRect, true)
@@ -183,10 +192,11 @@ func visibleActions() []uiAction {
 			add("cameraPrevious", cameraPreviousRect, cameraPage > 0)
 			add("cameraNext", cameraNextRect, cameraPage+1 < cameraListPages())
 		}
-		add("versionsPage", validationVersionsRect, true)
-		add("creditsPage", validationCreditsRect, true)
-
-		add("back", validationBackRect, true)
+		if !boardEnabled {
+			add("versionsPage", validationVersionsRect, true)
+			add("creditsPage", validationCreditsRect, true)
+			add("back", validationBackRect, true)
+		}
 	case "history":
 		pages := (len(r.Errors) + 4) / 5
 		if pages > 1 {
@@ -214,6 +224,11 @@ func visibleActions() []uiAction {
 		if saved {
 			add("file", openFileRect, true)
 			add("folder", openFolderRect, true)
+		}
+	}
+	if boardEnabled {
+		for _, t := range boardTabs {
+			a = append(a, uiAction{"tab_" + t.view, t.rect, !pb && !rb})
 		}
 	}
 	return a
@@ -260,6 +275,15 @@ func actionColor(r Rect, normal uintptr) uintptr {
 		rr, gg, bb := (normal & 255), (normal >> 8 & 255), (normal >> 16 & 255)
 		return rgb(byte((rr+42)/2), byte((gg+42)/2), byte((bb+46)/2))
 	}
+	if a.ID == hoverAction || a.ID == pressedAction {
+		rr, gg, bb := int(normal&255), int(normal>>8&255), int(normal>>16&255)
+		if rr < 180 && gg < 180 && bb < 180 {
+			rr += 12
+			gg += 12
+			bb += 12
+		}
+		return rgb(byte(rr), byte(gg), byte(bb))
+	}
 	return normal
 }
 func decorateAction(hdc uintptr, r Rect) {
@@ -267,15 +291,13 @@ func decorateAction(hdc uintptr, r Rect) {
 	if !ok || !a.Enabled {
 		return
 	}
+	// Text links use a tight underline rather than a button-sized frame.
+	if boardEnabled && (a.ID == "versions" || a.ID == "credits") {
+		return
+	}
 	color := uintptr(0)
 	width := uintptr(1)
-	if a.ID == hoverAction {
-		color = rgb(123, 153, 191)
-	}
-	if a.ID == pressedAction {
-		color = rgb(241, 163, 169)
-		width = 2
-	}
+
 	if keyboardFocus && a.ID == focusAction {
 		color = rgb(167, 200, 240)
 		width = 2
@@ -380,6 +402,13 @@ func handleUIMessage(hwnd uintptr, msg uint32, wp, lp uintptr) (bool, uintptr) {
 		return true, 0
 	}
 	if msg == WM_KEYDOWN && wp == 0x1B {
+		if boardEnabled && (boardHelpPinned || hoverAction == "board_shutter_help" || focusAction == "board_shutter_help") {
+			boardHelpPinned = false
+			hoverAction = ""
+			focusAction = ""
+			requestActionRepaint(hwnd, actionDamageRect(boardHelpRect))
+			return true, 0
+		}
 		stateMu.Lock()
 		view := currentView
 		stateMu.Unlock()
@@ -511,6 +540,17 @@ func handleUIMessage(hwnd uintptr, msg uint32, wp, lp uintptr) (bool, uintptr) {
 		pressedAction = ""
 		procInvalidateRect.Call(hwnd, 0, 0)
 		return true, 0 // WM_KILLFOCUS
+	case 0x0104: // WM_SYSKEYDOWN: browser-style Alt+Left.
+		if wp == 0x25 && boardEnabled {
+			for _, a := range visibleActions() {
+				if a.Enabled && boardIsBackAction(a.ID) {
+					handleClick(hwnd, (a.Rect.L+a.Rect.R)/2, (a.Rect.T+a.Rect.B)/2)
+					break
+				}
+			}
+			return true, 0
+		}
+		return false, 0
 	case WM_KEYDOWN:
 		shift, _, _ := procGetKeyState.Call(0x10)
 		switch wp {
@@ -534,7 +574,7 @@ func handleUIMessage(hwnd uintptr, msg uint32, wp, lp uintptr) (bool, uintptr) {
 				languageMenuOpen = false
 			} else {
 				for _, a := range visibleActions() {
-					if a.ID == "back" && a.Enabled {
+					if boardIsBackAction(a.ID) && a.Enabled {
 						handleClick(hwnd, (a.Rect.L+a.Rect.R)/2, (a.Rect.T+a.Rect.B)/2)
 						break
 					}
@@ -542,7 +582,7 @@ func handleUIMessage(hwnd uintptr, msg uint32, wp, lp uintptr) (bool, uintptr) {
 			}
 		case 0x74:
 			for _, a := range visibleActions() {
-				if (a.ID == "refresh" || a.ID == "connect") && a.Enabled {
+				if (a.ID == "refresh" || a.ID == "connect" || a.ID == "board_read" || a.ID == "board_diag_read" || a.ID == "board_welcome_read") && a.Enabled {
 					handleClick(hwnd, (a.Rect.L+a.Rect.R)/2, (a.Rect.T+a.Rect.B)/2)
 					break
 				}

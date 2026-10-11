@@ -1,8 +1,8 @@
 name: Bug report
-description: Report a reproducible problem in LUMIX Usage Info
+description: Report a reproducible problem in LUMERIAN LUMIX Usage Board
 body:
   - type: input
-    attributes: {label: Tool version, placeholder: v1.0.0}
+    attributes: {label: Tool version, placeholder: v1.1.0}
   - type: input
     attributes: {label: Camera model, placeholder: DC-S1RM2}
   - type: input

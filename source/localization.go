@@ -17,6 +17,8 @@ const (
 	languageAuto uint32 = iota
 	languageKorean
 	languageEnglish
+	languageJapanese
+	languageSpanish
 )
 
 var windowsKoreanUI uint32
@@ -26,7 +28,7 @@ func isKoreanUI() bool {
 	switch atomic.LoadUint32(&languageMode) {
 	case languageKorean:
 		return true
-	case languageEnglish:
+	case languageEnglish, languageJapanese, languageSpanish:
 		return false
 	default:
 		return atomic.LoadUint32(&windowsKoreanUI) != 0
@@ -51,13 +53,13 @@ func loadLanguagePreference() {
 		return
 	}
 	mode, err := strconv.Atoi(strings.TrimSpace(string(data)))
-	if err == nil && mode >= int(languageAuto) && mode <= int(languageEnglish) {
+	if err == nil && mode >= int(languageAuto) && mode <= int(languageSpanish) {
 		atomic.StoreUint32(&languageMode, uint32(mode))
 	}
 }
 
 func setLanguagePreference(mode uint32) error {
-	if mode > languageEnglish {
+	if mode > languageSpanish {
 		return fmt.Errorf("invalid language mode")
 	}
 	atomic.StoreUint32(&languageMode, mode)
@@ -77,7 +79,17 @@ func languageButtonLabel() string {
 		return "한국어  ▾"
 	case languageEnglish:
 		return "English  ▾"
+	case languageJapanese:
+		return "日本語  ▾"
+	case languageSpanish:
+		return "Español  ▾"
 	default:
+		switch boardLanguage() {
+		case languageJapanese:
+			return "日本語 · Auto ▾"
+		case languageSpanish:
+			return "Español · Auto ▾"
+		}
 		return uiText("English · Auto  ▾", "한국어 · 자동  ▾")
 	}
 }
@@ -85,17 +97,29 @@ func languageButtonLabel() string {
 func isKoreanLanguageID(id uint16) bool { return id&0x03ff == 0x12 }
 
 func refreshUILanguage() bool {
-	wasKorean := isKoreanUI()
+	previous := boardLanguage()
 	value, _, _ := procGetUserDefaultUILanguage.Call()
 	var next uint32
 	if isKoreanLanguageID(uint16(value)) {
 		next = 1
 	}
 	atomic.StoreUint32(&windowsKoreanUI, next)
-	return wasKorean != isKoreanUI()
+	id := uint16(value) & 0x03ff
+	mode := languageEnglish
+	if id == 0x11 {
+		mode = languageJapanese
+	}
+	if id == 0x0a {
+		mode = languageSpanish
+	}
+	atomic.StoreUint32(&boardWindowsLanguage, mode)
+	return previous != boardLanguage()
 }
 
 func uiText(english, korean string) string {
+	if v, ok := boardTranslate(english); ok {
+		return v
+	}
 	if isKoreanUI() {
 		return korean
 	}
@@ -330,6 +354,9 @@ var koreanText = map[string]string{
 }
 
 func localizeText(text string) string {
+	if v, ok := boardTranslate(text); ok {
+		return v
+	}
 	if strings.HasPrefix(text, "L10 response structure not supported: ") {
 		return uiText(text, "L10 응답 구조 미지원: "+strings.TrimPrefix(text, "L10 response structure not supported: "))
 	}
@@ -405,6 +432,9 @@ func localizeText(text string) string {
 }
 
 func buildReport(r UsageResult, status, validator, verifiedDate string) string {
+	if boardLanguage() == languageJapanese || boardLanguage() == languageSpanish {
+		return boardLocalizedReport(r, "last4")
+	}
 	if isKoreanUI() {
 		return buildKoreanReport(r, status, validator, verifiedDate)
 	}

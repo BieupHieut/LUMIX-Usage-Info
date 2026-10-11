@@ -8,7 +8,7 @@ import (
 )
 
 func productTitle() string {
-	return uiText("LUMERIAN-LUMIX Usage Info", "LUMERIAN-LUMIX 사용 정보")
+	return "LUMERIAN LUMIX Usage Board"
 }
 
 // Render a complete frame off screen. Windows clips the single final transfer
@@ -60,6 +60,9 @@ var requestActionRepaint = func(hwnd uintptr, r WinRect) {
 }
 
 func invalidateAction(hwnd uintptr, id string) {
+	if id == "board_shutter_help" {
+		requestActionRepaint(hwnd, actionDamageRect(boardHelpRect))
+	}
 	if id == "" {
 		return
 	}

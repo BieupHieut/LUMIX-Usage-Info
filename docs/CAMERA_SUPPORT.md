@@ -17,6 +17,12 @@ Counter 3/4는 추정, 5–7은 의미 미확인입니다.
 Counters 1/2 are confirmed as power/wake and shutter actuations for these community-verified pairs.
 **Other firmware on the same model is not automatically verified.** Counters 3/4 remain estimated and 5–7 unidentified.
 
+## Known query limitation / 확인된 조회 제한
+
+**DC-S1 / firmware 2.4:** connection and basic information reads were confirmed. In development build 1.1.0-beta.3, session start/end and battery/USB queries succeeded, but usage-history queries failed in all five tested conditions (`0x2002`, no data). Shutter and power/wake counter support is on hold. Additional repeated testing is not currently requested. This does not establish the behavior of every S1 firmware version.
+
+**DC-S1 / 펌웨어 2.4:** 연결과 기본 정보 조회를 확인했습니다. 개발 빌드 1.1.0-beta.3에서 세션 시작·종료와 배터리·USB 조회는 성공했지만, 사용 기록은 시험한 다섯 조건 모두 실패했습니다(`0x2002`, 데이터 없음). 셔터·전원/깨우기 카운터 지원은 보류하며, 현재 추가 반복 테스트를 요청하지 않습니다. 다른 모든 S1 펌웨어의 동작까지 확정한 결과는 아닙니다.
+
 ## Estimated support / 지원 추정 목록
 
 PC(테더) 연결을 바탕으로 한 지원 추정 목록입니다. 모든 기종의 조회 성공이나 카운터 의미를 보증하지 않습니다.
@@ -27,7 +33,7 @@ Please submit results through [Issues](https://github.com/BieupHieut/LUMIX-Usage
 
 | 시리즈 / Series | 미검증 모델 / Unverified models |
 |---|---|
-| S | DC-BS1H · DC-S1 · DC-S1R · DC-S1M2ES · DC-S1H · DC-S5M2X · DC-S9 |
+| S | DC-BS1H · DC-S1R · DC-S1M2ES · DC-S1H · DC-S5M2X · DC-S9 |
 | G / GH / BGH | DC-BGH1 · DC-GH5 · DC-GH5S · DC-GH5M2 · DC-G9 · DC-G9M2 · DC-GH6 · DC-GH7 |
 
 ## USB mode / 연결 모드
